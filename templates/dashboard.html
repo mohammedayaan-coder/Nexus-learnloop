@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Dashboard</title>
+  <meta name="description" content="Personal learner dashboard — track XP, daily streaks, activity heatmaps, and coding challenges on Nexus Learn Loop."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#131b2e", "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary": "#ffffff", "primary-container": "#6063ee", "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff", "surface-container-highest": "#dae2fd", "secondary-fixed": "#6ffbbe",
+            "primary-fixed-dim": "#c0c1ff", "background": "#faf8ff", "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff", "secondary": "#006c49", "primary-fixed": "#e1e0ff",
+            "tertiary-fixed": "#ffddb8", "on-surface-variant": "#464554", "primary": "#4648d4",
+            "outline-variant": "#c7c4d7", "surface-container-low": "#f2f3ff", "on-secondary": "#ffffff",
+            "outline": "#767586", "error": "#ba1a1a", "tertiary": "#825100", "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236", "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+            "inverse-surface": "#283044", "inverse-on-surface": "#eef0ff"
+          },
+          fontFamily: {
+            "body-md": ["Inter"], "label-bold": ["Inter"], "label-code": ["JetBrains Mono"],
+            "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest px-6 py-3 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm">
+  <div class="flex items-center gap-6">
+    <a href="dashboard.html" class="text-headline-sm font-bold text-primary flex items-center gap-2 tracking-tight">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+      </div>
+      <span>Nexus Learn Loop</span>
+    </a>
+  </div>
+  <nav class="hidden md:flex items-center gap-6">
+    <a href="dashboard.html" class="text-primary border-b-2 border-primary font-bold pb-1 text-xs">Dashboard</a>
+    <a href="lwb.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px] text-[#23a55a]">groups</span>
+      <span>Buddies (LWB)</span>
+    </a>
+    <a href="ai_agent.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px]">smart_toy</span>
+      <span>AI Mentor</span>
+    </a>
+    <a href="resources.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Resources</a>
+    <a href="quiz.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Quizzes</a>
+    <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
+    <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
+  </nav>
+  <div class="flex items-center gap-3">
+    <!-- Streak Chip -->
+    <a href="quiz.html" title="Daily Streak: 7 Days" class="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full border border-rose-200 hover:bg-rose-100 transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-rose-500" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+      <span class="text-xs font-bold font-label-bold">7d Streak</span>
+    </a>
+    <!-- XP Chip -->
+    <a href="leaderboard.html" title="Total XP: 1,420" class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200 hover:bg-amber-100 transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
+      <span class="font-label-code text-xs font-bold">1,420 XP</span>
+    </a>
+    <!-- Profile Avatar -->
+    <a href="profile.html" title="View Profile" class="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary-fixed text-primary font-bold text-sm flex items-center justify-center hover:ring-primary transition-all">
+      U
+    </a>
+  </div>
+</header>
+
+<!-- MAIN CONTAINER -->
+<main class="flex-1 max-w-[1340px] w-full mx-auto px-4 sm:px-6 py-6">
+
+  <!-- Welcome Banner & Quick Actions -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <h1 class="text-headline-md font-bold text-on-surface">Welcome back, Learner! 👋</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold">Streak Active</span>
+      </div>
+      <p class="text-sm text-on-surface-variant">Complete your daily challenge to keep your 7-day streak alive and earn +20 XP.</p>
+    </div>
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <a href="quiz.html" class="tactile-primary px-5 py-2.5 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">play_arrow</span>Daily Quiz (+20 XP)
+      </a>
+      <a href="ai_agent.html" class="tactile-ghost px-4 py-2.5 rounded-full bg-surface-container-low border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[16px] text-primary">smart_toy</span>Ask AI Mentor
+      </a>
+      <a href="timer.html" class="tactile-ghost px-4 py-2.5 rounded-full bg-surface-container-low border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[16px] text-secondary">timer</span>Study Timer
+      </a>
+      <a href="leaderboard.html" class="tactile-ghost px-4 py-2.5 rounded-full bg-surface-container-low border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[16px] text-tertiary">leaderboard</span>Rankings
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <a href="leaderboard.html" class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-on-surface-variant">Total XP</span>
+        <span class="material-symbols-outlined text-amber-500 text-[20px]">diamond</span>
+      </div>
+      <div class="mt-2">
+        <div class="text-headline-md font-bold text-on-surface">1,420</div>
+        <div class="text-[11px] text-secondary font-semibold mt-0.5">Rank #4 Global &bull; Diamond League</div>
+      </div>
+    </a>
+
+    <a href="quiz.html" class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-rose-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-on-surface-variant">Daily Streak</span>
+        <span class="material-symbols-outlined text-rose-500 text-[20px]" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+      </div>
+      <div class="mt-2">
+        <div class="text-headline-md font-bold text-on-surface">7 Days</div>
+        <div class="text-[11px] text-rose-600 font-semibold mt-0.5">Freeze protection active</div>
+      </div>
+    </a>
+
+    <a href="timer.html" class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-emerald-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-on-surface-variant">Focus Hours</span>
+        <span class="material-symbols-outlined text-emerald-600 text-[20px]">schedule</span>
+      </div>
+      <div class="mt-2">
+        <div class="text-headline-md font-bold text-on-surface">14.5 hrs</div>
+        <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">3 sprints completed today</div>
+      </div>
+    </a>
+
+    <a href="quiz.html" class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-medium text-on-surface-variant">Challenges Solved</span>
+        <span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+      </div>
+      <div class="mt-2">
+        <div class="text-headline-md font-bold text-on-surface">32 / 40</div>
+        <div class="text-[11px] text-primary font-semibold mt-0.5">80% accuracy score</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Main 2-Column Content -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT: Heatmap, Challenges & Quests (8 cols) -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+
+      <!-- Today's Coding Challenge Card -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border-2 border-primary/20 shadow-sm flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+            <span class="text-xs font-bold text-secondary tracking-wider uppercase font-label-code">Daily Challenge &bull; Ready</span>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">+20 XP</span>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-bold text-on-surface">Python Template Interpolation &amp; Expressions</h2>
+          <p class="text-xs text-on-surface-variant mt-1">Test your mastery of Jinja2 expression tags, filters, and safe variable rendering.</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-inverse-surface text-inverse-on-surface font-label-code text-xs overflow-x-auto">
+          <code>&lt;p&gt;Score: &#123;&#123; user.score | default(0) &#125;&#125;&lt;/p&gt;</code>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <span class="text-xs text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">timer</span>~2 minutes
+          </span>
+          <a href="quiz.html" class="tactile-primary px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm">
+            <span>Solve Challenge</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Activity Heatmap (GitHub-Style) -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-on-surface">Learning Activity Heatmap</h2>
+            <p class="text-xs text-on-surface-variant">148 contributions in the last 12 months</p>
+          </div>
+          <a href="profile.html" class="text-xs text-primary font-bold hover:underline">Full Showcase →</a>
+        </div>
+
+        <!-- Heatmap Grid -->
+        <div class="overflow-x-auto pb-2">
+          <div id="dashboard-heatmap" class="grid grid-flow-col grid-rows-7 gap-1.5 w-max"></div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 mt-2 border-t border-outline-variant/60 text-[11px] text-on-surface-variant">
+          <span>Mon &bull; Wed &bull; Fri</span>
+          <div class="flex items-center gap-1.5">
+            <span>Less</span>
+            <span class="w-2.5 h-2.5 rounded-sm bg-surface-container-high"></span>
+            <span class="w-2.5 h-2.5 rounded-sm bg-[#9be9a8]"></span>
+            <span class="w-2.5 h-2.5 rounded-sm bg-[#40c463]"></span>
+            <span class="w-2.5 h-2.5 rounded-sm bg-[#30a14e]"></span>
+            <span class="w-2.5 h-2.5 rounded-sm bg-[#216e39]"></span>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Quests -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+        <h2 class="text-base font-bold text-on-surface mb-3">Daily Quests</h2>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center font-bold text-sm">1</span>
+              <div>
+                <div class="text-xs font-bold text-on-surface">Complete 1 Challenge Quiz</div>
+                <div class="text-[11px] text-on-surface-variant">Earn +20 XP</div>
+              </div>
+            </div>
+            <a href="quiz.html" class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-colors">Start</a>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-secondary-fixed text-secondary flex items-center justify-center font-bold text-sm">2</span>
+              <div>
+                <div class="text-xs font-bold text-on-surface">Log 25 Minutes on Study Timer</div>
+                <div class="text-[11px] text-on-surface-variant">Earn +30 XP</div>
+              </div>
+            </div>
+            <a href="timer.html" class="px-3.5 py-1.5 rounded-full bg-secondary text-on-secondary text-xs font-bold hover:bg-secondary/90 transition-colors">Timer</a>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">3</span>
+              <div>
+                <div class="text-xs font-bold text-on-surface">Browse 1 Learning Resource</div>
+                <div class="text-[11px] text-on-surface-variant">Expand your knowledge</div>
+              </div>
+            </div>
+            <a href="resources.html" class="px-3.5 py-1.5 rounded-full bg-surface-container-highest text-on-surface text-xs font-bold hover:bg-surface-container transition-colors">Explore</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Mini Leaderboard & Badges (4 cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-6">
+
+      <!-- Leaderboard Preview -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-on-surface flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-amber-500 text-[20px]">military_tech</span>
+            <span>Top Learners</span>
+          </h2>
+          <a href="leaderboard.html" class="text-xs text-primary font-bold hover:underline">View All →</a>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/60 border border-amber-200">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-bold text-xs flex items-center justify-center">1</span>
+              <div>
+                <div class="text-xs font-bold text-on-surface">Elena Rostova</div>
+                <div class="text-[10px] text-on-surface-variant">🔥 14d streak</div>
+              </div>
+            </div>
+            <span class="font-label-code text-xs font-bold text-amber-800">2,840 XP</span>
+          </div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-800 font-bold text-xs flex items-center justify-center">2</span>
+              <div>
+                <div class="text-xs font-bold text-on-surface">Marcus Chen</div>
+                <div class="text-[10px] text-on-surface-variant">🔥 11d streak</div>
+              </div>
+            </div>
+            <span class="font-label-code text-xs font-bold text-on-surface">2,610 XP</span>
+          </div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-amber-700 text-white font-bold text-xs flex items-center justify-center">3</span>
+              <div>
+                <div class="text-xs font-bold text-on-surface">Amina Diop</div>
+                <div class="text-[10px] text-on-surface-variant">🔥 9d streak</div>
+              </div>
+            </div>
+            <span class="font-label-code text-xs font-bold text-on-surface">2,490 XP</span>
+          </div>
+
+          <!-- Current User Ranking -->
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-primary-fixed border border-primary/30 mt-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center">4</span>
+              <div>
+                <div class="text-xs font-bold text-on-primary-fixed">You (Learner)</div>
+                <div class="text-[10px] text-primary">🔥 7d streak &bull; Diamond</div>
+              </div>
+            </div>
+            <span class="font-label-code text-xs font-bold text-on-primary-fixed">1,420 XP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Badges -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-on-surface">Earned Badges</h2>
+          <a href="profile.html" class="text-xs text-primary font-bold hover:underline">All Badges →</a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-1.5">
+              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+            </div>
+            <div class="text-xs font-bold text-on-surface">7-Day Burner</div>
+            <div class="text-[10px] text-on-surface-variant">Unlocked</div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant">
+            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-1.5">
+              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">terminal</span>
+            </div>
+            <div class="text-xs font-bold text-on-surface">Quiz Master</div>
+            <div class="text-[10px] text-on-surface-variant">Unlocked</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learn With Buddies (LWB) Discord Lounge -->
+      <div class="p-5 rounded-2xl bg-[#1e1f22] text-[#dbdee1] border border-[#2b2d31] shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#23a55a] flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-[#23a55a] animate-pulse"></span>
+              <span>LWB Live Lounge</span>
+            </span>
+            <span class="px-2 py-0.5 rounded bg-[#5865f2] text-white text-[10px] font-bold">DISCORD HYBRID</span>
+          </div>
+          <h3 class="text-base font-bold text-white mt-2 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px] text-[#5865f2]">groups</span>
+            <span>Learn With Buddies</span>
+          </h3>
+          <p class="text-xs text-[#949ba4] mt-1">Join active voice rooms (VC) or text channels (TC) for pair programming & shared focus.</p>
+          <div class="flex items-center gap-2 mt-3 text-[11px] text-[#dbdee1]">
+            <span class="px-2 py-0.5 rounded bg-[#2b2d31] text-[#23a55a] font-bold">🔊 4 Buddies in VC</span>
+            <span class="px-2 py-0.5 rounded bg-[#2b2d31] text-[#949ba4]"># general-chat</span>
+          </div>
+        </div>
+        <a href="lwb.html" class="mt-4 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#5865f2] hover:bg-[#4752c4] text-white font-bold text-xs shadow transition-all">
+          <span>Enter LWB Lounge</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+
+      <!-- Study Timer Shortcut -->
+      <div class="p-5 rounded-2xl bg-gradient-to-br from-secondary to-secondary-container text-white shadow-sm flex flex-col justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-white/80">Focused Sprint</span>
+          <h3 class="text-lg font-bold mt-1">YPT Study Timer</h3>
+          <p class="text-xs text-white/90 mt-1">Study distraction-free with customizable intervals and soundscapes.</p>
+        </div>
+        <a href="timer.html" class="mt-4 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white text-secondary font-bold text-xs shadow hover:bg-white/95 transition-all">
+          <span>Start 25m Timer</span>
+          <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script src="../static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Learner Profile &amp; Showcase</title>
+  <meta name="description" content="GitHub-inspired learner profile — track XP history, badges, and contribution heatmaps on Nexus Learn Loop."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#131b2e", "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary": "#ffffff", "primary-container": "#6063ee", "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff", "surface-container-highest": "#dae2fd", "secondary-fixed": "#6ffbbe",
+            "primary-fixed-dim": "#c0c1ff", "background": "#faf8ff", "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff", "secondary": "#006c49", "primary-fixed": "#e1e0ff",
+            "tertiary-fixed": "#ffddb8", "on-surface-variant": "#464554", "primary": "#4648d4",
+            "outline-variant": "#c7c4d7", "surface-container-low": "#f2f3ff", "on-secondary": "#ffffff",
+            "outline": "#767586", "error": "#ba1a1a", "tertiary": "#825100", "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236", "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+            "inverse-surface": "#283044", "inverse-on-surface": "#eef0ff"
+          },
+          fontFamily: {
+            "body-md": ["Inter"], "label-bold": ["Inter"], "label-code": ["JetBrains Mono"],
+            "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest px-6 py-3 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm">
+  <div class="flex items-center gap-6">
+    <a href="dashboard.html" class="text-headline-sm font-bold text-primary flex items-center gap-2 tracking-tight">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+      </div>
+      <span>Nexus Learn Loop</span>
+    </a>
+  </div>
+  <nav class="hidden md:flex items-center gap-6">
+    <a href="dashboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Dashboard</a>
+    <a href="lwb.html" class="text-on-surface-variant font-medium hover:text-[#23a55a] transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px] text-[#23a55a]">groups</span>
+      <span>Buddies (LWB)</span>
+    </a>
+    <a href="ai_agent.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px]">smart_toy</span>
+      <span>AI Mentor</span>
+    </a>
+    <a href="resources.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Resources</a>
+    <a href="quiz.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Quizzes</a>
+    <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
+    <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
+  </nav>
+  <div class="flex items-center gap-3">
+    <a href="login.html" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[16px]">logout</span>Sign Out
+    </a>
+  </div>
+</header>
+
+<!-- MAIN PROFILE -->
+<main class="flex-1 max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+
+  <!-- Profile Hero Banner -->
+  <div class="p-8 rounded-3xl bg-gradient-to-r from-primary to-primary-container text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
+    <div class="flex items-center gap-5">
+      <div class="w-20 h-20 rounded-full bg-white text-primary font-extrabold text-2xl flex items-center justify-center shadow-lg border-4 border-white/30 shrink-0">
+        U
+      </div>
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <h1 class="text-2xl font-bold">Nexus Learner</h1>
+          <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold">Diamond League</span>
+        </div>
+        <p class="text-white/80 text-xs">Member since Oct 2026 &bull; Web &amp; Python Engineering Track</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="quiz.html" class="px-5 py-2.5 rounded-full bg-white text-primary font-bold text-xs shadow hover:bg-white/95 transition-all flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px]">bolt</span>Daily Quiz
+      </a>
+      <a href="timer.html" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px]">timer</span>Study Timer
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics 4-Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <a href="leaderboard.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-primary/50 transition-all">
+      <div class="text-xs text-on-surface-variant font-medium">Total XP</div>
+      <div class="text-headline-md font-bold text-primary mt-1">1,420</div>
+      <div class="text-[11px] text-secondary font-semibold">Rank #4 Global</div>
+    </a>
+
+    <a href="quiz.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-rose-300 transition-all">
+      <div class="text-xs text-on-surface-variant font-medium">Daily Streak</div>
+      <div class="text-headline-md font-bold text-rose-600 mt-1">7 Days 🔥</div>
+      <div class="text-[11px] text-on-surface-variant">Best: 14 Days</div>
+    </a>
+
+    <a href="quiz.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-emerald-300 transition-all">
+      <div class="text-xs text-on-surface-variant font-medium">Quizzes Solved</div>
+      <div class="text-headline-md font-bold text-secondary mt-1">32</div>
+      <div class="text-[11px] text-on-surface-variant">80% Accuracy</div>
+    </a>
+
+    <a href="timer.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-purple-300 transition-all">
+      <div class="text-xs text-on-surface-variant font-medium">Study Hours</div>
+      <div class="text-headline-md font-bold text-purple-700 mt-1">14.5 hrs</div>
+      <div class="text-[11px] text-on-surface-variant">This Week</div>
+    </a>
+  </div>
+
+  <!-- Activity Heatmap (GitHub-Style) -->
+  <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-base font-bold text-on-surface">Yearly Learning Consistency</h2>
+        <p class="text-xs text-on-surface-variant">148 contributions in 2026</p>
+      </div>
+      <span class="text-xs text-secondary font-bold">Habit Score: Excellent</span>
+    </div>
+
+    <!-- Heatmap Grid -->
+    <div class="overflow-x-auto pb-2">
+      <div id="profile-heatmap" class="grid grid-flow-col grid-rows-7 gap-1.5 w-max"></div>
+    </div>
+
+    <div class="flex items-center justify-between pt-3 mt-2 border-t border-outline-variant/60 text-[11px] text-on-surface-variant">
+      <span>Consistent habit: Mon &bull; Wed &bull; Fri &bull; Sat</span>
+      <div class="flex items-center gap-1.5">
+        <span>Less</span>
+        <span class="w-2.5 h-2.5 rounded-sm bg-surface-container-high"></span>
+        <span class="w-2.5 h-2.5 rounded-sm bg-[#9be9a8]"></span>
+        <span class="w-2.5 h-2.5 rounded-sm bg-[#40c463]"></span>
+        <span class="w-2.5 h-2.5 rounded-sm bg-[#30a14e]"></span>
+        <span class="w-2.5 h-2.5 rounded-sm bg-[#216e39]"></span>
+        <span>More</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Badges Unlocked Section -->
+  <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-bold text-on-surface">Unlocked Badges (3 / 6)</h2>
+      <span class="text-xs text-on-surface-variant">Next: 14-Day Streak</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-rose-900">7-Day Burner</div>
+          <div class="text-[11px] text-rose-700">Protected daily streak</div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1;">terminal</span>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-amber-900">Quiz Master</div>
+          <div class="text-[11px] text-amber-700">30+ challenges solved</div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1;">schedule</span>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-emerald-900">Deep Focus Sprint</div>
+          <div class="text-[11px] text-emerald-700">10+ study hours logged</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connected Bottom Links -->
+  <div class="flex items-center justify-between p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+    <a href="dashboard.html" class="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>Back to Dashboard
+    </a>
+    <div class="flex items-center gap-4 text-xs font-medium text-on-surface-variant">
+      <a href="quiz.html" class="hover:text-primary transition-colors">Daily Quiz</a>
+      <a href="timer.html" class="hover:text-primary transition-colors">Study Timer</a>
+      <a href="leaderboard.html" class="hover:text-primary transition-colors">Leaderboard</a>
+      <a href="resources.html" class="hover:text-primary transition-colors">Resources</a>
+    </div>
+  </div>
+
+</main>
+
+<script src="../static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Challenge Results</title>
+  <meta name="description" content="Quiz session results — XP earned, streak extension, and recommended next challenges on Nexus Learn Loop."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#131b2e", "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary": "#ffffff", "primary-container": "#6063ee", "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff", "surface-container-highest": "#dae2fd", "secondary-fixed": "#6ffbbe",
+            "primary-fixed-dim": "#c0c1ff", "background": "#faf8ff", "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff", "secondary": "#006c49", "primary-fixed": "#e1e0ff",
+            "tertiary-fixed": "#ffddb8", "on-surface-variant": "#464554", "primary": "#4648d4",
+            "outline-variant": "#c7c4d7", "surface-container-low": "#f2f3ff", "on-secondary": "#ffffff",
+            "outline": "#767586", "error": "#ba1a1a", "tertiary": "#825100", "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236", "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+            "inverse-surface": "#283044", "inverse-on-surface": "#eef0ff"
+          },
+          fontFamily: {
+            "body-md": ["Inter"], "label-bold": ["Inter"], "label-code": ["JetBrains Mono"],
+            "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: fixed; width: 10px; height: 10px; top: -20px;
+      animation: confetti-fall 3.5s ease-in forwards; pointer-events: none; border-radius: 2px; z-index: 9999;
+    }
+  </style>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased" id="result-body">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest px-6 py-3 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm">
+  <div class="flex items-center gap-6">
+    <a href="dashboard.html" class="text-headline-sm font-bold text-primary flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+      </div>
+      <span>Nexus Learn Loop</span>
+    </a>
+  </div>
+  <nav class="hidden md:flex items-center gap-6">
+    <a href="dashboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Dashboard</a>
+    <a href="lwb.html" class="text-on-surface-variant font-medium hover:text-[#23a55a] transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px] text-[#23a55a]">groups</span>
+      <span>Buddies (LWB)</span>
+    </a>
+    <a href="ai_agent.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px]">smart_toy</span>
+      <span>AI Mentor</span>
+    </a>
+    <a href="resources.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Resources</a>
+    <a href="quiz.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Quizzes</a>
+    <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
+    <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
+  </nav>
+  <div class="flex items-center gap-3">
+    <a href="dashboard.html" class="px-3.5 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors">
+      Dashboard
+    </a>
+  </div>
+</header>
+
+<!-- MAIN RESULTS CONTENT -->
+<main class="flex-1 max-w-[840px] w-full mx-auto px-4 sm:px-6 py-10 flex flex-col gap-6">
+
+  <!-- Celebration Card -->
+  <div class="p-8 rounded-3xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center relative overflow-hidden">
+    <div class="w-20 h-20 rounded-full bg-secondary-fixed text-on-secondary-fixed border-4 border-secondary flex items-center justify-center mx-auto mb-4 shadow-lg">
+      <span class="material-symbols-outlined text-[44px]" style="font-variation-settings:'FILL' 1;">emoji_events</span>
+    </div>
+
+    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-bold text-xs mb-3">
+      <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1;">check_circle</span>
+      <span>Challenge Complete!</span>
+    </div>
+
+    <h1 class="text-headline-lg font-bold text-on-surface tracking-tight mb-2">Great Work, Learner!</h1>
+    <p class="text-sm text-on-surface-variant max-w-md mx-auto mb-6">
+      You correctly solved today's Jinja2 challenge and kept your streak alive.
+    </p>
+
+    <!-- Stat Highlights -->
+    <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-6">
+      <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+        <div class="text-headline-sm font-bold text-amber-800">+20 XP</div>
+        <div class="text-[11px] text-amber-700 font-medium mt-0.5">Reward Earned</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200">
+        <div class="text-headline-sm font-bold text-rose-600">8 Days 🔥</div>
+        <div class="text-[11px] text-rose-700 font-medium mt-0.5">Streak Extended</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+        <div class="text-headline-sm font-bold text-secondary">100%</div>
+        <div class="text-[11px] text-secondary font-medium mt-0.5">Accuracy</div>
+      </div>
+    </div>
+
+    <!-- Review Section -->
+    <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-left max-w-lg mx-auto mb-6">
+      <div class="text-xs font-bold text-on-surface mb-1">Answer Summary:</div>
+      <div class="text-xs text-on-surface-variant">
+        You chose <code class="font-label-code text-primary font-bold">&#123;&#123; user_xp &#125;&#125;</code> (Option B). Jinja2 evaluates double curly braces as expressions and automatically escapes HTML output.
+      </div>
+    </div>
+
+    <!-- Connected Action Buttons -->
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a href="quiz.html" class="tactile-primary px-6 py-3 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center gap-2 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">replay</span>
+        <span>Practice Another Quiz</span>
+      </a>
+      <a href="timer.html" class="tactile-ghost px-5 py-3 rounded-full bg-surface-container-low border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-2 hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[16px] text-secondary">timer</span>
+        <span>Start Study Timer</span>
+      </a>
+      <a href="leaderboard.html" class="tactile-ghost px-5 py-3 rounded-full bg-surface-container-low border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-2 hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[16px] text-amber-600">leaderboard</span>
+        <span>View Rankings</span>
+      </a>
+      <a href="dashboard.html" class="px-5 py-3 rounded-full text-on-surface-variant font-bold text-xs hover:text-primary transition-colors">
+        Back to Dashboard →
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<script src="../static/js/main.js"></script>
+<script>
+  // Confetti particles generator
+  const colors = ["#4648d4", "#006c49", "#825100", "#ffddb8", "#6ffbbe", "#6063ee"];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = Math.random() * 1.5 + "s";
+    el.style.animationDuration = Math.random() * 2 + 2 + "s";
+    document.body.appendChild(el);
+  }
+</script>
+</body>
+</html>

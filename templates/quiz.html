@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Daily Challenge Quiz</title>
+  <meta name="description" content="Test your engineering skills with interactive daily coding challenges on Nexus Learn Loop. Earn XP and keep your streak alive."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#131b2e", "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary": "#ffffff", "primary-container": "#6063ee", "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff", "surface-container-highest": "#dae2fd", "secondary-fixed": "#6ffbbe",
+            "primary-fixed-dim": "#c0c1ff", "background": "#faf8ff", "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff", "secondary": "#006c49", "primary-fixed": "#e1e0ff",
+            "tertiary-fixed": "#ffddb8", "on-surface-variant": "#464554", "primary": "#4648d4",
+            "outline-variant": "#c7c4d7", "surface-container-low": "#f2f3ff", "on-secondary": "#ffffff",
+            "outline": "#767586", "error": "#ba1a1a", "tertiary": "#825100", "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236", "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+            "inverse-surface": "#283044", "inverse-on-surface": "#eef0ff"
+          },
+          fontFamily: {
+            "body-md": ["Inter"], "label-bold": ["Inter"], "label-code": ["JetBrains Mono"],
+            "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest px-6 py-3 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm">
+  <div class="flex items-center gap-6">
+    <a href="dashboard.html" class="text-headline-sm font-bold text-primary flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+      </div>
+      <span>Nexus Learn Loop</span>
+    </a>
+  </div>
+  <nav class="hidden md:flex items-center gap-6">
+    <a href="dashboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Dashboard</a>
+    <a href="lwb.html" class="text-on-surface-variant font-medium hover:text-[#23a55a] transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px] text-[#23a55a]">groups</span>
+      <span>Buddies (LWB)</span>
+    </a>
+    <a href="ai_agent.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px]">smart_toy</span>
+      <span>AI Mentor</span>
+    </a>
+    <a href="resources.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Resources</a>
+    <a href="quiz.html" class="text-primary border-b-2 border-primary font-bold pb-1 text-xs">Quizzes</a>
+    <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
+    <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
+  </nav>
+  <div class="flex items-center gap-3">
+    <!-- Streak -->
+    <div class="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full border border-rose-200">
+      <span class="material-symbols-outlined text-[18px] text-rose-500" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+      <span class="text-xs font-bold font-label-bold">7d Streak</span>
+    </div>
+    <!-- XP -->
+    <div class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200">
+      <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
+      <span class="font-label-code text-xs font-bold">1,420 XP</span>
+    </div>
+    <a href="dashboard.html" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors">
+      Exit
+    </a>
+  </div>
+</header>
+
+<!-- MAIN QUIZ AREA -->
+<main class="flex-1 max-w-[1100px] w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+
+  <!-- Quiz Header Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center font-bold">
+        <span class="material-symbols-outlined text-[22px]">quiz</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-primary font-label-code">DAILY CHALLENGE #42</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">+20 XP</span>
+        </div>
+        <h1 class="text-lg font-bold text-on-surface">Python Jinja2 Expression Interpolation</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="quiz-timer" class="px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant font-label-code text-xs font-bold text-on-surface">
+        ⏱ 00:45
+      </div>
+      <span class="text-xs text-on-surface-variant">Question 1 of 1</span>
+    </div>
+  </div>
+
+  <!-- Quiz Split Layout: Question on Left, Options on Right -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left: Code Snippet & Problem (6 cols) -->
+    <div class="lg:col-span-6 flex flex-col gap-4">
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col h-full justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-outline uppercase tracking-wider mb-2">Question Prompt</h2>
+          <p class="text-base text-on-surface font-medium leading-relaxed mb-4">
+            Which Jinja2 syntax correctly evaluates and outputs the variable <code class="px-1.5 py-0.5 rounded bg-surface-container-high font-label-code text-primary font-bold">user_xp</code> to the HTML response?
+          </p>
+
+          <div class="rounded-xl overflow-hidden border border-outline-variant bg-[#1e1e2e] text-[#cdd6f4] p-4 font-label-code text-xs leading-relaxed">
+            <div class="text-[#6c7086] mb-2">// app/templates/dashboard.html</div>
+            <div>&lt;<span class="text-[#89b4fa]">div</span> <span class="text-[#a6e3a1]">class</span>=<span class="text-[#a6e3a1]">"badge"</span>&gt;</div>
+            <div class="pl-4 text-[#f9e2af]">&lt;!-- Target expression goes here --&gt;</div>
+            <div class="pl-4 text-[#a6e3a1]">XP: [ ??? ]</div>
+            <div>&lt;/<span class="text-[#89b4fa]">div</span>&gt;</div>
+          </div>
+        </div>
+
+        <div class="pt-4 mt-4 border-t border-outline-variant text-xs text-on-surface-variant flex items-center justify-between">
+          <span>Topic: Flask 3.0 &bull; Templates</span>
+          <span class="text-secondary font-bold">Difficulty: Medium</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Options (6 cols) -->
+    <div class="lg:col-span-6 flex flex-col gap-4">
+      <div class="space-y-3" id="quiz-options">
+
+        <!-- Option A -->
+        <button class="quiz-option w-full text-left bg-surface-container-lowest border-2 border-outline-variant hover:border-primary rounded-xl p-4 shadow-sm transition-all flex items-center justify-between group" data-correct="false" data-key="A">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface font-bold text-xs flex items-center justify-center border border-outline-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">A</span>
+            <code class="font-label-code text-sm font-bold text-on-surface">&#123;% user_xp %&#125;</code>
+          </div>
+          <span class="text-[11px] text-on-surface-variant">Control tag</span>
+        </button>
+
+        <!-- Option B (Correct) -->
+        <button class="quiz-option w-full text-left bg-surface-container-lowest border-2 border-outline-variant hover:border-primary rounded-xl p-4 shadow-sm transition-all flex items-center justify-between group" data-correct="true" data-key="B">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface font-bold text-xs flex items-center justify-center border border-outline-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">B</span>
+            <code class="font-label-code text-sm font-bold text-on-surface">&#123;&#123; user_xp &#125;&#125;</code>
+          </div>
+          <span class="text-[11px] text-secondary font-bold">Expression output</span>
+        </button>
+
+        <!-- Option C -->
+        <button class="quiz-option w-full text-left bg-surface-container-lowest border-2 border-outline-variant hover:border-primary rounded-xl p-4 shadow-sm transition-all flex items-center justify-between group" data-correct="false" data-key="C">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface font-bold text-xs flex items-center justify-center border border-outline-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">C</span>
+            <code class="font-label-code text-sm font-bold text-on-surface">&lt;%= user_xp %&gt;</code>
+          </div>
+          <span class="text-[11px] text-on-surface-variant">ERB syntax</span>
+        </button>
+
+        <!-- Option D -->
+        <button class="quiz-option w-full text-left bg-surface-container-lowest border-2 border-outline-variant hover:border-primary rounded-xl p-4 shadow-sm transition-all flex items-center justify-between group" data-correct="false" data-key="D">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface font-bold text-xs flex items-center justify-center border border-outline-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">D</span>
+            <code class="font-label-code text-sm font-bold text-on-surface">$&#123;user_xp&#125;</code>
+          </div>
+          <span class="text-[11px] text-on-surface-variant">ES6 template</span>
+        </button>
+
+      </div>
+
+      <!-- Quick Explanation Note -->
+      <div class="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant text-xs text-on-surface-variant">
+        💡 <strong>Key Concept:</strong> In Jinja2, double curly braces <code class="font-label-code text-primary">&#123;&#123; ... &#125;&#125;</code> print expression values, while <code class="font-label-code text-primary">&#123;% ... %&#125;</code> runs statements like <code class="font-label-code">for</code> or <code class="font-label-code">if</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Action Bar -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
+    <a href="dashboard.html" class="px-5 py-2.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors">
+      ← Back to Dashboard
+    </a>
+    <div class="flex items-center gap-3">
+      <span id="quiz-feedback" class="text-xs font-bold text-secondary hidden">Correct! Nice work.</span>
+      <a id="submit-quiz-btn" href="result.html" class="tactile-primary px-8 py-2.5 rounded-full bg-secondary text-on-secondary font-bold text-xs flex items-center gap-2 shadow-sm">
+        <span>Submit Answer</span>
+        <span class="material-symbols-outlined text-[16px]">check</span>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<script src="../static/js/main.js"></script>
+<script>
+  // Simple stopwatch
+  let seconds = 45;
+  const timerEl = document.getElementById("quiz-timer");
+  setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const s = String(seconds % 60).padStart(2, "0");
+    if (timerEl) timerEl.textContent = `⏱ ${m}:${s}`;
+  }, 1000);
+
+  // Option selection
+  const options = document.querySelectorAll(".quiz-option");
+  const feedback = document.getElementById("quiz-feedback");
+  const submitBtn = document.getElementById("submit-quiz-btn");
+
+  options.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      options.forEach((b) => {
+        b.classList.remove("border-secondary", "bg-emerald-50/50", "border-rose-400", "bg-rose-50/50", "border-primary");
+        b.classList.add("border-outline-variant");
+      });
+
+      const isCorrect = btn.dataset.correct === "true";
+      if (isCorrect) {
+        btn.classList.add("border-secondary", "bg-emerald-50/50");
+        if (feedback) {
+          feedback.textContent = "✓ Option B is correct (+20 XP)";
+          feedback.className = "text-xs font-bold text-secondary";
+          feedback.classList.remove("hidden");
+        }
+      } else {
+        btn.classList.add("border-rose-400", "bg-rose-50/50");
+        if (feedback) {
+          feedback.textContent = "✗ That's not quite right. Try again!";
+          feedback.className = "text-xs font-bold text-rose-600";
+          feedback.classList.remove("hidden");
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>
