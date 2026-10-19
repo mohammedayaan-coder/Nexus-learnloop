@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — AI Learning Agent</title>
+  <meta name="description" content="Ask technical questions, debug code, and explore concepts with your 24/7 AI programming mentor on Nexus Learn Loop."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#131b2e", "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary": "#ffffff", "primary-container": "#6063ee", "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff", "surface-container-highest": "#dae2fd", "secondary-fixed": "#6ffbbe",
+            "primary-fixed-dim": "#c0c1ff", "background": "#faf8ff", "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff", "secondary": "#006c49", "primary-fixed": "#e1e0ff",
+            "tertiary-fixed": "#ffddb8", "on-surface-variant": "#464554", "primary": "#4648d4",
+            "outline-variant": "#c7c4d7", "surface-container-low": "#f2f3ff", "on-secondary": "#ffffff",
+            "outline": "#767586", "error": "#ba1a1a", "tertiary": "#825100", "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236", "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+            "inverse-surface": "#283044", "inverse-on-surface": "#eef0ff"
+          },
+          fontFamily: {
+            "body-md": ["Inter"], "label-bold": ["Inter"], "label-code": ["JetBrains Mono"],
+            "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface h-full flex flex-col antialiased">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest px-6 py-3 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm shrink-0">
+  <div class="flex items-center gap-6">
+    <a href="dashboard.html" class="text-headline-sm font-bold text-primary flex items-center gap-2 tracking-tight">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+      </div>
+      <span>Nexus Learn Loop</span>
+    </a>
+  </div>
+  <nav class="hidden md:flex items-center gap-6">
+    <a href="dashboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Dashboard</a>
+    <a href="lwb.html" class="text-on-surface-variant font-medium hover:text-[#23a55a] transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px] text-[#23a55a]">groups</span>
+      <span>Buddies (LWB)</span>
+    </a>
+    <a href="ai_agent.html" class="text-primary border-b-2 border-primary font-bold pb-1 text-xs flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[16px]">smart_toy</span>
+      <span>AI Mentor</span>
+    </a>
+    <a href="resources.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Resources</a>
+    <a href="quiz.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Quizzes</a>
+    <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
+    <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
+  </nav>
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200">
+      <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
+      <span class="font-label-code text-xs font-bold">1,420 XP</span>
+    </div>
+    <a href="profile.html" class="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary-fixed text-primary font-bold text-sm flex items-center justify-center hover:ring-primary transition-all">
+      U
+    </a>
+  </div>
+</header>
+
+<!-- MAIN CHAT CONTAINER -->
+<main class="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-6 flex flex-col min-h-0">
+
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm mb-4 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-[22px]">smart_toy</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold text-on-surface">Nexus AI Mentor</h1>
+          <button id="config-key-btn" title="Click to view or set your Google Gemini API Key" class="flex items-center">
+            <span id="api-status-badge" class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold flex items-center gap-1 hover:opacity-85 transition-opacity">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+              <span>Gemini Live AI</span>
+            </span>
+          </button>
+        </div>
+        <p class="text-xs text-on-surface-variant">Ask doubts, understand code logic, or get hints on daily challenges.</p>
+      </div>
+    </div>
+    <!-- Topic Select Pills -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0" id="topic-chips">
+      <button class="topic-chip active px-3 py-1 rounded-full bg-primary text-on-primary font-bold text-xs whitespace-nowrap transition-colors" data-topic="General">All Topics</button>
+      <button class="topic-chip px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors" data-topic="Python">Python</button>
+      <button class="topic-chip px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors" data-topic="Frontend">Frontend</button>
+      <button class="topic-chip px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors" data-topic="Database">Databases</button>
+      <button class="topic-chip px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface font-bold text-xs whitespace-nowrap transition-colors" data-topic="DevOps">DevOps</button>
+    </div>
+  </div>
+
+  <!-- Chat Log Box -->
+  <div id="chat-messages" class="flex-1 bg-surface-container-lowest rounded-2xl border border-outline-variant p-5 shadow-sm overflow-y-auto space-y-4 mb-4">
+
+    <!-- Welcome Message from Agent -->
+    <div class="flex items-start gap-3 max-w-2xl">
+      <div class="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+        <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+      </div>
+      <div class="p-4 rounded-2xl rounded-tl-sm bg-surface-container-low border border-outline-variant text-xs text-on-surface leading-relaxed space-y-2">
+        <p class="font-bold text-primary">Hey Learner! 👋</p>
+        <p>I'm your Nexus AI Mentor. I can help explain programming topics, debug snippets, or clarify challenge solutions. What topic are you studying today?</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Prompt Pills -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-3 shrink-0" id="prompt-suggestions">
+    <button class="prompt-pill px-3 py-1.5 rounded-xl bg-surface-container-lowest border border-outline-variant hover:border-primary text-[11px] font-medium text-on-surface-variant hover:text-primary transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+      <span class="material-symbols-outlined text-[14px] text-primary">lightbulb</span>
+      <span>Explain Jinja2 template inheritance</span>
+    </button>
+    <button class="prompt-pill px-3 py-1.5 rounded-xl bg-surface-container-lowest border border-outline-variant hover:border-primary text-[11px] font-medium text-on-surface-variant hover:text-primary transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+      <span class="material-symbols-outlined text-[14px] text-secondary">storage</span>
+      <span>How do SQLite composite indexes work?</span>
+    </button>
+    <button class="prompt-pill px-3 py-1.5 rounded-xl bg-surface-container-lowest border border-outline-variant hover:border-primary text-[11px] font-medium text-on-surface-variant hover:text-primary transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+      <span class="material-symbols-outlined text-[14px] text-amber-600">code</span>
+      <span>Show me Python list comprehension syntax</span>
+    </button>
+    <button class="prompt-pill px-3 py-1.5 rounded-xl bg-surface-container-lowest border border-outline-variant hover:border-primary text-[11px] font-medium text-on-surface-variant hover:text-primary transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+      <span class="material-symbols-outlined text-[14px] text-purple-600">merge</span>
+      <span>How to resolve a Git merge conflict</span>
+    </button>
+  </div>
+
+  <!-- Message Input Form -->
+  <form id="chat-form" class="bg-surface-container-lowest p-2 rounded-2xl border-2 border-outline-variant focus-within:border-primary shadow-sm flex items-center gap-2 shrink-0 transition-colors">
+    <div class="pl-3 text-outline">
+      <span class="material-symbols-outlined text-[20px]">chat</span>
+    </div>
+    <input id="chat-input" type="text" autocomplete="off" placeholder="Ask a question about your code or topic (e.g. 'How does Flask routing work?')..." class="flex-1 bg-transparent border-0 text-xs font-medium focus:outline-none focus:ring-0 text-on-surface placeholder:text-outline"/>
+    <button type="submit" id="send-btn" class="tactile-primary px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-primary/95 transition-all">
+      <span>Send</span>
+      <span class="material-symbols-outlined text-[16px]">send</span>
+    </button>
+  </form>
+
+</main>
+
+<script src="../static/js/main.js"></script>
+<script src="../static/js/ai_agent.js"></script>
+</body>
+</html>

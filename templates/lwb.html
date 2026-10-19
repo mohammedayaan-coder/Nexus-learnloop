@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Learn With Buddies (LWB)</title>
+  <meta name="description" content="Discord-style collaborative study space with live voice channels (VC) and text channels (TC) for peer programming and shared focus on Nexus Learn Loop."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+  <style>
+    /* Custom Discord-style scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #2b2d31; }
+    ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #111214; }
+  </style>
+</head>
+<body class="bg-[#1e1f22] text-[#dbdee1] h-full flex flex-col font-sans overflow-hidden select-none antialiased">
+
+  <!-- TOP MINIMAL NEXUS APP BAR -->
+  <header class="h-9 bg-[#1e1f22] border-b border-[#2b2d31] px-3 flex items-center justify-between text-xs text-[#949ba4] shrink-0 z-40">
+    <div class="flex items-center gap-3">
+      <a href="dashboard.html" class="flex items-center gap-1.5 text-white font-bold hover:text-[#5865f2] transition-colors">
+        <span class="material-symbols-outlined text-[16px] text-[#5865f2]">all_inclusive</span>
+        <span class="text-[11px] uppercase tracking-wider">Nexus Learn Loop</span>
+      </a>
+      <span class="text-[#4e5058]">/</span>
+      <span class="text-white font-semibold text-[11px] flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px] text-[#23a55a]">groups</span>
+        <span>Learn With Buddies (LWB)</span>
+      </span>
+      <span class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-[#23a55a]/20 text-[#23a55a] text-[10px] font-bold">DISCORD HYBRID</span>
+    </div>
+
+    <div class="flex items-center gap-4 text-[11px]">
+      <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px]">arrow_back</span>
+        <span>Back to Dashboard</span>
+      </a>
+      <a href="ai_agent.html" class="hover:text-white transition-colors hidden md:flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px] text-[#5865f2]">smart_toy</span>
+        <span>AI Mentor</span>
+      </a>
+      <div class="flex items-center gap-1.5 bg-[#2b2d31] px-2 py-0.5 rounded-full text-amber-400 font-mono text-[10px] font-bold">
+        <span>⚡ 1,420 XP</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- DISCORD MAIN 3-PANEL SHELL -->
+  <div class="flex-1 flex overflow-hidden min-h-0">
+
+    <!-- 1. LEFTMOST SERVER / SPACE STRIP -->
+    <nav class="w-[72px] bg-[#1e1f22] flex flex-col items-center py-3 gap-2 shrink-0 border-r border-[#2b2d31]/50 overflow-y-auto">
+      
+      <!-- Nexus Hub (Active Server) -->
+      <button title="Nexus Global Study Hub" class="group relative w-12 h-12 rounded-2xl bg-[#5865f2] text-white flex items-center justify-center transition-all shadow-md">
+        <span class="absolute -left-3 w-2 h-10 bg-white rounded-r-full"></span>
+        <span class="material-symbols-outlined text-[24px]">school</span>
+      </button>
+
+      <div class="w-8 h-[2px] bg-[#35363c] rounded my-1"></div>
+
+      <!-- Python Guild -->
+      <button title="Python Mastery Guild" class="group relative w-12 h-12 rounded-full hover:rounded-2xl bg-[#313338] hover:bg-[#5865f2] text-white flex items-center justify-center transition-all font-bold text-sm">
+        <span class="material-symbols-outlined text-[20px] text-amber-400 group-hover:text-white">terminal</span>
+        <span class="absolute -top-1 -right-1 px-1.5 py-0.2 bg-[#f23f43] text-white text-[10px] font-bold rounded-full border-2 border-[#1e1f22]">3</span>
+      </button>
+
+      <!-- Web Dev Squad -->
+      <button title="Web Dev & Frontend Squad" class="group relative w-12 h-12 rounded-full hover:rounded-2xl bg-[#313338] hover:bg-[#5865f2] text-white flex items-center justify-center transition-all font-bold text-sm">
+        <span class="material-symbols-outlined text-[20px] text-cyan-400 group-hover:text-white">html</span>
+      </button>
+
+      <!-- LeetCode Grind -->
+      <button title="DSA & LeetCode Grind" class="group relative w-12 h-12 rounded-full hover:rounded-2xl bg-[#313338] hover:bg-[#5865f2] text-white flex items-center justify-center transition-all font-bold text-sm">
+        <span class="material-symbols-outlined text-[20px] text-emerald-400 group-hover:text-white">code_blocks</span>
+      </button>
+
+      <!-- 24/7 Pomodoro VC Guild -->
+      <button title="24/7 Silent Pomodoro Lounge" class="group relative w-12 h-12 rounded-full hover:rounded-2xl bg-[#313338] hover:bg-[#23a55a] text-white flex items-center justify-center transition-all font-bold text-sm">
+        <span class="material-symbols-outlined text-[20px] text-[#23a55a] group-hover:text-white">timer</span>
+      </button>
+
+      <!-- Add Community (+) -->
+      <button title="Add a Study Space" class="w-12 h-12 rounded-full hover:rounded-2xl bg-[#313338] hover:bg-[#23a55a] text-[#23a55a] hover:text-white flex items-center justify-center transition-all">
+        <span class="material-symbols-outlined text-[22px]">add</span>
+      </button>
+
+      <!-- Explore Communities -->
+      <button title="Explore Public Study Groups" class="w-12 h-12 rounded-full hover:rounded-2xl bg-[#313338] hover:bg-[#5865f2] text-[#949ba4] hover:text-white flex items-center justify-center transition-all">
+        <span class="material-symbols-outlined text-[20px]">explore</span>
+      </button>
+
+      <div class="mt-auto flex flex-col items-center gap-2">
+        <a href="profile.html" title="User Profile" class="w-11 h-11 rounded-full bg-[#4648d4] text-white font-bold text-xs flex items-center justify-center hover:ring-2 hover:ring-[#5865f2] transition-all">
+          U
+        </a>
+      </div>
+    </nav>
+
+    <!-- 2. CHANNELS SIDEBAR (TEXT & VOICE) -->
+    <aside class="w-60 bg-[#2b2d31] flex flex-col shrink-0 border-r border-[#1f2023]">
+      
+      <!-- Community Header -->
+      <div class="h-12 border-b border-[#1f2023] px-4 flex items-center justify-between hover:bg-[#35373c]/50 transition-colors cursor-pointer shadow-sm">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="material-symbols-outlined text-[18px] text-[#5865f2]">verified</span>
+          <span class="font-bold text-white text-sm truncate">Nexus Buddies Hub</span>
+        </div>
+        <span class="material-symbols-outlined text-[20px] text-[#949ba4]">expand_more</span>
+      </div>
+
+      <!-- Channel List (Scrollable) -->
+      <div class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+        
+        <!-- TEXT CHANNELS CATEGORY -->
+        <div>
+          <div class="px-2 pb-1.5 flex items-center justify-between text-[11px] font-bold text-[#949ba4] uppercase tracking-wider">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">expand_more</span>
+              <span>Text Channels (TC)</span>
+            </span>
+            <button title="Create Text Channel" class="hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+            </button>
+          </div>
+
+          <div class="space-y-0.5">
+            <button class="text-channel-item active w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-white bg-[#35373c] transition-colors" data-channel="general-chat">
+              <span class="material-symbols-outlined text-[16px] text-[#949ba4]">tag</span>
+              <span class="truncate">general-chat</span>
+            </button>
+            <button class="text-channel-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-channel="code-help-and-debug">
+              <span class="material-symbols-outlined text-[16px] text-[#949ba4]">tag</span>
+              <span class="truncate">code-help-and-debug</span>
+            </button>
+            <button class="text-channel-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-channel="challenge-discussions">
+              <span class="material-symbols-outlined text-[16px] text-[#949ba4]">tag</span>
+              <span class="truncate">challenge-discussions</span>
+            </button>
+            <button class="text-channel-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-channel="resource-drop">
+              <span class="material-symbols-outlined text-[16px] text-[#949ba4]">tag</span>
+              <span class="truncate">resource-drop</span>
+            </button>
+            <button class="text-channel-item w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-channel="showcase-and-wins">
+              <span class="material-symbols-outlined text-[16px] text-[#949ba4]">tag</span>
+              <span class="truncate">showcase-and-wins</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- VOICE CHANNELS CATEGORY -->
+        <div>
+          <div class="px-2 pb-1.5 flex items-center justify-between text-[11px] font-bold text-[#949ba4] uppercase tracking-wider">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">expand_more</span>
+              <span>Voice Channels (VC)</span>
+            </span>
+            <button title="Create Voice Channel" class="hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+            </button>
+          </div>
+
+          <div class="space-y-0.5">
+            <button class="voice-channel-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-vc="Silent Pomodoro Room">
+              <div class="flex items-center gap-2 truncate">
+                <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                <span class="truncate">Silent Pomodoro Room</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-[#23a55a]/20 text-[#23a55a] font-bold shrink-0">4 live</span>
+            </button>
+
+            <button class="voice-channel-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-vc="Pair Programming VC 1">
+              <div class="flex items-center gap-2 truncate">
+                <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                <span class="truncate">Pair Programming VC 1</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-[#5865f2]/20 text-[#5865f2] font-bold shrink-0">2 live</span>
+            </button>
+
+            <button class="voice-channel-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-vc="Algorithm Whiteboard VC">
+              <div class="flex items-center gap-2 truncate">
+                <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                <span class="truncate">Algorithm Whiteboard VC</span>
+              </div>
+            </button>
+
+            <button class="voice-channel-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-[#949ba4] hover:bg-[#35373c]/60 hover:text-[#dbdee1] transition-colors" data-vc="Casual Break Lounge">
+              <div class="flex items-center gap-2 truncate">
+                <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                <span class="truncate">Casual Break Lounge</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ACTIVE VOICE STATUS DOCK (Appears when in VC) -->
+      <div id="voice-status-bar" class="hidden px-3 py-2 bg-[#232428] border-t border-[#1f2023] flex-col gap-1.5 shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-[#23a55a] animate-pulse">wifi_calling_3</span>
+            <div>
+              <div class="text-[11px] font-bold text-[#23a55a] flex items-center gap-1.5">
+                <span>Voice Connected</span>
+                <span class="text-[9px] text-[#949ba4] font-normal">/ 18ms</span>
+              </div>
+              <div id="voice-status-channel" class="text-[10px] text-[#949ba4] truncate max-w-[130px]">Silent Pomodoro Room</div>
+            </div>
+          </div>
+          <button id="disconnect-voice-btn" title="Disconnect from Voice" class="p-1.5 rounded-md bg-[#35373c] hover:bg-[#f23f43] text-[#dbdee1] hover:text-white transition-colors">
+            <span class="material-symbols-outlined text-[16px]">call_end</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BOTTOM USER AUDIO PROFILE DOCK -->
+      <div class="h-[52px] bg-[#232428] px-2 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2 min-w-0 hover:bg-[#35373c]/50 p-1 rounded-md transition-colors cursor-pointer">
+          <div class="relative w-8 h-8 rounded-full bg-[#5865f2] text-white flex items-center justify-center font-bold text-xs shrink-0">
+            <span>U</span>
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#232428]"></span>
+          </div>
+          <div class="truncate">
+            <div class="text-xs font-bold text-white truncate leading-tight">Learner</div>
+            <div class="text-[10px] text-[#949ba4] truncate">#2026 • Online</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-0.5 text-[#b5bac1]">
+          <button id="toggle-mic-btn" title="Mute/Unmute Mic" class="p-1.5 rounded-md hover:bg-[#35373c] hover:text-white transition-colors">
+            <span id="user-mic-icon" class="material-symbols-outlined text-[18px]">mic</span>
+          </button>
+          <button id="toggle-deafen-btn" title="Deafen Audio" class="p-1.5 rounded-md hover:bg-[#35373c] hover:text-white transition-colors">
+            <span id="user-deafen-icon" class="material-symbols-outlined text-[18px]">headphones</span>
+          </button>
+          <a href="profile.html" title="User Settings" class="p-1.5 rounded-md hover:bg-[#35373c] hover:text-white transition-colors">
+            <span class="material-symbols-outlined text-[18px]">settings</span>
+          </a>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- 3. CENTER MAIN CHAT / VOICE STAGE -->
+    <main class="flex-1 flex flex-col bg-[#313338] min-w-0">
+
+      <!-- TOP CHANNEL HEADER -->
+      <div class="h-12 border-b border-[#1f2023] px-4 flex items-center justify-between bg-[#313338] shrink-0 z-10 shadow-sm">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="current-channel-icon" class="material-symbols-outlined text-[20px] text-[#949ba4]">tag</span>
+          <h1 id="current-channel-title" class="font-bold text-white text-sm truncate">general-chat</h1>
+          <span class="hidden md:inline-block w-[1px] h-4 bg-[#4e5058] mx-1"></span>
+          <p id="current-channel-desc" class="hidden md:inline-block text-xs text-[#949ba4] truncate max-w-md">Hang out, chat about study goals, and share your daily progress.</p>
+        </div>
+
+        <div class="flex items-center gap-2 text-[#b5bac1]">
+          <button id="switch-chat-btn" title="Toggle Voice Stage / Chat" class="px-2.5 py-1 rounded bg-[#35373c] hover:bg-[#404249] text-xs font-semibold text-white flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">group</span>
+            <span>Voice Stage</span>
+          </button>
+          <button id="toggle-members-btn" title="Toggle Member List" class="p-1.5 rounded hover:bg-[#35373c] hover:text-white transition-colors">
+            <span class="material-symbols-outlined text-[20px]">group</span>
+          </button>
+          <div class="relative hidden sm:block">
+            <input type="text" placeholder="Search..." class="w-36 focus:w-52 transition-all bg-[#1e1f22] border-0 rounded-md py-1 px-2.5 text-xs text-white placeholder-[#949ba4] focus:ring-1 focus:ring-[#5865f2]"/>
+            <span class="material-symbols-outlined text-[14px] absolute right-2 top-2 text-[#949ba4]">search</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW A: TEXT CHAT VIEW (TC) -->
+      <div id="text-chat-view" class="flex-1 flex flex-col min-h-0">
+        
+        <!-- Messages Feed -->
+        <div id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-4">
+          
+          <!-- Channel Intro Card -->
+          <div class="py-6 border-b border-[#3f4147]/50 mb-4">
+            <div class="w-16 h-16 rounded-full bg-[#35373c] flex items-center justify-center text-white mb-2">
+              <span class="material-symbols-outlined text-[36px]">tag</span>
+            </div>
+            <h2 class="text-2xl font-bold text-white">Welcome to #general-chat!</h2>
+            <p class="text-sm text-[#949ba4] mt-1">This is the start of the #general-chat channel. Collaborate with fellow students, celebrate milestones, and study together.</p>
+          </div>
+
+          <!-- Message 1 (Mentor Sarah) -->
+          <div class="group flex items-start gap-3.5 px-3 py-2 rounded-lg hover:bg-[#2e3035] transition-colors">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm mt-0.5">
+              S
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-sm hover:underline cursor-pointer">Sarah_Codes</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Senior Mentor</span>
+                <span class="text-[11px] text-[#949ba4]">Today at 10:14 AM</span>
+              </div>
+              <div class="text-sm text-[#dbdee1] leading-relaxed mt-1">
+                Hey buddies! 👋 Just a reminder that our daily algorithmic challenge is active in the Quizzes section. Let's conquer Dijkstra and SQLite indexes today! Who is joining the Pomodoro VC room?
+              </div>
+              <div class="flex items-center gap-1.5 mt-2">
+                <button class="reaction-pill px-2 py-0.5 rounded-full bg-[#2b2d31] hover:bg-[#35373c] border border-[#3f4147] text-xs text-[#dbdee1] flex items-center gap-1 transition-all" data-count="6">
+                  <span>🔥</span><span class="text-[11px] font-bold count">6</span>
+                </button>
+                <button class="reaction-pill px-2 py-0.5 rounded-full bg-[#2b2d31] hover:bg-[#35373c] border border-[#3f4147] text-xs text-[#dbdee1] flex items-center gap-1 transition-all" data-count="4">
+                  <span>🚀</span><span class="text-[11px] font-bold count">4</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 2 (Dev Rohan with Code Block) -->
+          <div class="group flex items-start gap-3.5 px-3 py-2 rounded-lg hover:bg-[#2e3035] transition-colors">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm mt-0.5">
+              R
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-sm hover:underline cursor-pointer">Dev_Rohan</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">14d Streak</span>
+                <span class="text-[11px] text-[#949ba4]">Today at 10:18 AM</span>
+              </div>
+              <div class="text-sm text-[#dbdee1] leading-relaxed mt-1">
+                Here is a clean Python snippet for parsing heap queues if anyone is debugging challenge 3:
+              </div>
+              <div class="rounded-lg overflow-hidden border border-[#1e1f22] bg-[#1e1f22] p-3 my-2 font-mono text-xs text-[#cdd6f4]">
+                <div class="text-[#949ba4] text-[10px] uppercase font-bold mb-1">python</div>
+                <pre class="overflow-x-auto"><code>import heapq
+
+def solve_priority(nodes):
+    heap = []
+    for weight, val in nodes:
+        heapq.heappush(heap, (weight, val))
+    return [heapq.heappop(heap) for _ in range(len(heap))]</code></pre>
+              </div>
+              <div class="flex items-center gap-1.5 mt-2">
+                <button class="reaction-pill px-2 py-0.5 rounded-full bg-[#2b2d31] hover:bg-[#35373c] border border-[#3f4147] text-xs text-[#dbdee1] flex items-center gap-1 transition-all" data-count="3">
+                  <span>💻</span><span class="text-[11px] font-bold count">3</span>
+                </button>
+                <button class="reaction-pill px-2 py-0.5 rounded-full bg-[#2b2d31] hover:bg-[#35373c] border border-[#3f4147] text-xs text-[#dbdee1] flex items-center gap-1 transition-all" data-count="2">
+                  <span>💡</span><span class="text-[11px] font-bold count">2</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 3 (Nexus Bot Rich Announcement) -->
+          <div class="group flex items-start gap-3.5 px-3 py-2 rounded-lg hover:bg-[#2e3035] transition-colors">
+            <div class="w-10 h-10 rounded-full bg-[#5865f2] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm mt-0.5">
+              <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-sm">Nexus Bot</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#5865f2] text-white">BOT</span>
+                <span class="text-[11px] text-[#949ba4]">Today at 10:25 AM</span>
+              </div>
+              <div class="mt-2 p-3.5 rounded-xl bg-[#2b2d31] border-l-4 border-[#23a55a] max-w-lg space-y-1.5 shadow-sm">
+                <div class="font-bold text-white text-xs flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#23a55a]">timer</span>
+                  <span>Pomodoro Voice Session Active!</span>
+                </div>
+                <p class="text-xs text-[#dbdee1]">4 students are currently in <strong class="text-white">Silent Pomodoro Room</strong>. Complete a 25-minute study cycle together to earn +30 XP.</p>
+                <a href="#join-vc" onclick="document.querySelector('.voice-channel-item').click(); return false;" class="inline-block mt-1 px-3 py-1 rounded bg-[#23a55a] text-white font-bold text-xs hover:bg-[#23a55a]/90 transition-colors">
+                  Join Voice Lounge
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="p-4 bg-[#313338] shrink-0">
+          <form id="message-form" class="bg-[#383a40] rounded-lg px-4 py-2.5 flex items-center gap-3">
+            <button type="button" title="Upload File / Code Snippet" class="text-[#b5bac1] hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            </button>
+            <input id="message-input" type="text" autocomplete="off" placeholder="Message #general-chat (type something and press Enter)..." class="flex-1 bg-transparent border-0 text-sm text-white placeholder-[#949ba4] focus:outline-none focus:ring-0"/>
+            <button type="button" title="Insert Code" onclick="document.getElementById('message-input').value += '```\n\n```';" class="text-[#b5bac1] hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-[20px]">code</span>
+            </button>
+            <button type="submit" class="px-3 py-1 rounded-md bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs font-bold flex items-center gap-1 transition-colors">
+              <span>Send</span>
+              <span class="material-symbols-outlined text-[14px]">send</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- VIEW B: VOICE STAGE VIEW (VC) -->
+      <div id="voice-stage-view" class="hidden flex-1 flex flex-col min-h-0 bg-[#1e1f22] p-4 overflow-y-auto">
+        
+        <div class="flex items-center justify-between mb-4 shrink-0">
+          <div>
+            <h2 id="stage-vc-title" class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#23a55a]">volume_up</span>
+              <span>Silent Pomodoro Room</span>
+            </h2>
+            <p class="text-xs text-[#949ba4]">4 Buddies Connected • High Quality 64kbps Opus Audio</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="stage-reaction-btn px-2.5 py-1 rounded-lg bg-[#2b2d31] hover:bg-[#35373c] text-sm">🎉</button>
+            <button class="stage-reaction-btn px-2.5 py-1 rounded-lg bg-[#2b2d31] hover:bg-[#35373c] text-sm">🔥</button>
+            <button class="stage-reaction-btn px-2.5 py-1 rounded-lg bg-[#2b2d31] hover:bg-[#35373c] text-sm">👏</button>
+            <button class="stage-reaction-btn px-2.5 py-1 rounded-lg bg-[#2b2d31] hover:bg-[#35373c] text-sm">💯</button>
+          </div>
+        </div>
+
+        <!-- Video & Avatar Grid -->
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-h-0 mb-4">
+          
+          <!-- Tile 1: User (You) -->
+          <div id="user-stage-tile" class="relative rounded-2xl bg-[#2b2d31] flex flex-col items-center justify-center p-6 border border-[#35373c] min-h-[160px] overflow-hidden">
+            <div class="user-speaking-ring absolute inset-0 rounded-2xl border-2 border-[#23a55a] shadow-[0_0_12px_rgba(35,165,90,0.5)] transition-all pointer-events-none animate-pulse"></div>
+            <div id="user-stage-avatar" class="w-20 h-20 rounded-full bg-[#5865f2] text-white flex items-center justify-center font-bold text-2xl shadow-lg mb-2">
+              U
+            </div>
+            <div id="user-stage-camera" class="hidden absolute inset-0 bg-neutral-900 flex items-center justify-center text-xs text-[#949ba4]">
+              <span class="material-symbols-outlined text-[48px] text-emerald-400">videocam</span>
+            </div>
+            <div class="absolute bottom-3 left-3 bg-[#1e1f22]/80 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
+              <span>You (Speaking)</span>
+            </div>
+          </div>
+
+          <!-- Tile 2: Sarah (Screen Sharing) -->
+          <div class="relative rounded-2xl bg-[#2b2d31] flex flex-col items-center justify-center p-6 border border-[#35373c] min-h-[160px] overflow-hidden">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg mb-2">
+              S
+            </div>
+            <div class="absolute bottom-3 left-3 bg-[#1e1f22]/80 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#23a55a]"></span>
+              <span>Sarah_Codes (Screen Sharing)</span>
+            </div>
+            <div class="absolute top-3 right-3 bg-[#5865f2] text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px]">screen_share</span>
+              <span>LIVE</span>
+            </div>
+          </div>
+
+          <!-- Tile 3: Dev_Rohan -->
+          <div class="relative rounded-2xl bg-[#2b2d31] flex flex-col items-center justify-center p-6 border border-[#35373c] min-h-[160px] overflow-hidden">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg mb-2">
+              R
+            </div>
+            <div class="absolute bottom-3 left-3 bg-[#1e1f22]/80 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[14px] text-[#f23f43]">mic_off</span>
+              <span>Dev_Rohan (Focusing)</span>
+            </div>
+          </div>
+
+          <!-- Tile 4: Lo-Fi Music & Study Bot -->
+          <div class="relative rounded-2xl bg-[#2b2d31] flex flex-col items-center justify-center p-6 border border-[#35373c] min-h-[160px] overflow-hidden">
+            <div class="w-20 h-20 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg mb-2">
+              <span class="material-symbols-outlined text-[32px]">graphic_eq</span>
+            </div>
+            <div class="absolute bottom-3 left-3 bg-[#1e1f22]/80 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[14px] text-emerald-400">music_note</span>
+              <span>Lo-Fi Chill Beats Bot</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Simulated Screen Share Box (When triggered) -->
+        <div id="screen-share-preview" class="hidden rounded-2xl bg-[#111214] border border-[#35373c] p-4 mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">screen_share</span>
+              <span>Your Screen Share: VS Code — Nexus-learnloop</span>
+            </span>
+            <span class="text-[10px] text-[#949ba4]">1080p 60fps</span>
+          </div>
+          <div class="h-44 bg-[#18191c] rounded-xl flex items-center justify-center border border-[#2b2d31] font-mono text-xs text-[#949ba4]">
+            <div class="text-center">
+              <span class="material-symbols-outlined text-[36px] text-[#5865f2] mb-1">laptop_mac</span>
+              <p class="text-white font-bold">Sharing Primary Display to Study Buddies</p>
+              <p class="text-[11px] text-[#949ba4]">Peer latency: 14ms</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating VC Action Dock -->
+        <div class="flex items-center justify-center gap-3 py-3 bg-[#2b2d31] rounded-2xl border border-[#35373c] shrink-0">
+          <button id="stage-mic-btn" title="Toggle Microphone" class="p-3 rounded-full bg-[#35373c] hover:bg-[#404249] text-white transition-all shadow-md">
+            <span id="stage-mic-icon" class="material-symbols-outlined text-[20px]">mic</span>
+          </button>
+          <button id="stage-cam-btn" title="Toggle Camera" class="p-3 rounded-full bg-[#35373c] hover:bg-[#404249] text-white transition-all shadow-md">
+            <span class="material-symbols-outlined text-[20px]">videocam</span>
+          </button>
+          <button id="stage-share-btn" title="Share Screen" class="p-3 rounded-full bg-[#35373c] hover:bg-[#404249] text-white transition-all shadow-md">
+            <span class="material-symbols-outlined text-[20px]">screen_share</span>
+          </button>
+          <button id="stage-leave-vc-btn" title="Disconnect" class="px-5 py-3 rounded-full bg-[#f23f43] hover:bg-[#da373b] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
+            <span class="material-symbols-outlined text-[18px]">call_end</span>
+            <span>Disconnect</span>
+          </button>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- 4. RIGHTMOST MEMBERS SIDEBAR (COLLAPSIBLE) -->
+    <aside id="members-sidebar" class="w-60 bg-[#2b2d31] p-4 hidden lg:flex flex-col border-l border-[#1f2023] shrink-0 overflow-y-auto">
+      
+      <!-- Mentors -->
+      <div class="mb-4">
+        <h3 class="text-[11px] font-bold text-[#949ba4] uppercase tracking-wider mb-2">Mentors — 2</h3>
+        <div class="space-y-1">
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md hover:bg-[#35373c]/60 transition-colors cursor-pointer">
+            <div class="relative w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+              S
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#2b2d31]"></span>
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-bold text-purple-300 truncate">Sarah_Codes</div>
+              <div class="text-[10px] text-[#949ba4] truncate">Python Lead 🐍</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md hover:bg-[#35373c]/60 transition-colors cursor-pointer">
+            <div class="relative w-8 h-8 rounded-full bg-[#5865f2] text-white flex items-center justify-center font-bold text-xs">
+              A
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#2b2d31]"></span>
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-bold text-white truncate">Alex_Admin</div>
+              <div class="text-[10px] text-[#949ba4] truncate">Nexus Staff 🛡️</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Online Study Buddies -->
+      <div class="mb-4">
+        <h3 class="text-[11px] font-bold text-[#949ba4] uppercase tracking-wider mb-2">Study Buddies — 4</h3>
+        <div class="space-y-1">
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md hover:bg-[#35373c]/60 transition-colors cursor-pointer">
+            <div class="relative w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs">
+              R
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#2b2d31]"></span>
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-bold text-amber-300 truncate">Dev_Rohan</div>
+              <div class="text-[10px] text-[#949ba4] truncate">In Pomodoro VC 🔊</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md hover:bg-[#35373c]/60 transition-colors cursor-pointer">
+            <div class="relative w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-xs">
+              P
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#2b2d31]"></span>
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-bold text-cyan-300 truncate">Priya_ML</div>
+              <div class="text-[10px] text-[#949ba4] truncate">Pair Programming 💻</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md hover:bg-[#35373c]/60 transition-colors cursor-pointer">
+            <div class="relative w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+              K
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#2b2d31]"></span>
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-bold text-emerald-300 truncate">Kevin_Dev</div>
+              <div class="text-[10px] text-[#949ba4] truncate">Focus Mode 🎧</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md hover:bg-[#35373c]/60 transition-colors cursor-pointer">
+            <div class="relative w-8 h-8 rounded-full bg-[#4648d4] text-white flex items-center justify-center font-bold text-xs">
+              U
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#23a55a] border-2 border-[#2b2d31]"></span>
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-bold text-white truncate">You (Learner)</div>
+              <div class="text-[10px] text-[#949ba4] truncate">Level 12 Scholar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline -->
+      <div>
+        <h3 class="text-[11px] font-bold text-[#949ba4] uppercase tracking-wider mb-2">Offline — 4</h3>
+        <div class="space-y-1 opacity-60">
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md">
+            <div class="w-8 h-8 rounded-full bg-[#35373c] text-[#949ba4] flex items-center justify-center font-bold text-xs">J</div>
+            <span class="text-xs text-[#949ba4]">Jordan_T</span>
+          </div>
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md">
+            <div class="w-8 h-8 rounded-full bg-[#35373c] text-[#949ba4] flex items-center justify-center font-bold text-xs">E</div>
+            <span class="text-xs text-[#949ba4]">Elena_Code</span>
+          </div>
+          <div class="flex items-center gap-2.5 p-1.5 rounded-md">
+            <div class="w-8 h-8 rounded-full bg-[#35373c] text-[#949ba4] flex items-center justify-center font-bold text-xs">C</div>
+            <span class="text-xs text-[#949ba4]">Chris_Dev</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <script src="../static/js/lwb.js"></script>
+</body>
+</html>

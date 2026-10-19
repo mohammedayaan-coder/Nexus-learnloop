@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Study Timer</title>
+  <meta name="description" content="YPT-inspired focus timer with Pomodoro presets, lo-fi soundscapes, and automatic XP bonus tracking on Nexus Learn Loop."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#131b2e", "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary": "#ffffff", "primary-container": "#6063ee", "surface-container": "#eaedff",
+            "surface-container-high": "#e2e7ff", "surface-container-highest": "#dae2fd", "secondary-fixed": "#6ffbbe",
+            "primary-fixed-dim": "#c0c1ff", "background": "#faf8ff", "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff", "secondary": "#006c49", "primary-fixed": "#e1e0ff",
+            "tertiary-fixed": "#ffddb8", "on-surface-variant": "#464554", "primary": "#4648d4",
+            "outline-variant": "#c7c4d7", "surface-container-low": "#f2f3ff", "on-secondary": "#ffffff",
+            "outline": "#767586", "error": "#ba1a1a", "tertiary": "#825100", "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236", "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+            "inverse-surface": "#283044", "inverse-on-surface": "#eef0ff"
+          },
+          fontFamily: {
+            "body-md": ["Inter"], "label-bold": ["Inter"], "label-code": ["JetBrains Mono"],
+            "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .timer-ring-circle {
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+  </style>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest px-6 py-3 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm">
+  <div class="flex items-center gap-6">
+    <a href="dashboard.html" class="text-headline-sm font-bold text-primary flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+      </div>
+      <span>Nexus Learn Loop</span>
+    </a>
+  </div>
+  <nav class="hidden md:flex items-center gap-6">
+    <a href="dashboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Dashboard</a>
+    <a href="lwb.html" class="text-on-surface-variant font-medium hover:text-[#23a55a] transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px] text-[#23a55a]">groups</span>
+      <span>Buddies (LWB)</span>
+    </a>
+    <a href="ai_agent.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs flex items-center gap-1">
+      <span class="material-symbols-outlined text-[15px]">smart_toy</span>
+      <span>AI Mentor</span>
+    </a>
+    <a href="resources.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Resources</a>
+    <a href="quiz.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Quizzes</a>
+    <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
+    <a href="timer.html" class="text-primary border-b-2 border-primary font-bold pb-1 text-xs">Study Timer</a>
+  </nav>
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200">
+      <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
+      <span class="font-label-code text-xs font-bold">1,420 XP</span>
+    </div>
+    <a href="profile.html" class="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary-fixed text-primary font-bold text-sm flex items-center justify-center hover:ring-primary transition-all">
+      U
+    </a>
+  </div>
+</header>
+
+<!-- MAIN TIMER CONTAINER -->
+<main class="flex-1 max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+  <!-- LEFT: Focus Timer (8 cols) -->
+  <section class="lg:col-span-8 flex flex-col gap-6">
+
+    <!-- Header & Status -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-headline-md font-bold text-on-surface">Study &amp; Focus Timer</h1>
+        <p class="text-xs text-on-surface-variant">Stay in the zone. Earn +30 XP on each completed 25-minute sprint.</p>
+      </div>
+      <a href="quiz.html" class="hidden sm:flex items-center gap-1.5 text-xs text-primary font-bold hover:underline">
+        <span class="material-symbols-outlined text-[16px]">quiz</span>Take Quiz Break →
+      </a>
+    </div>
+
+    <!-- Timer Card -->
+    <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant p-8 shadow-sm flex flex-col items-center relative overflow-hidden">
+
+      <!-- Preset Mode Tabs -->
+      <div class="p-1.5 bg-surface-container-low rounded-full border border-outline-variant flex items-center gap-1 mb-6 shadow-inner">
+        <button id="mode-pomodoro" class="preset px-5 py-2 rounded-full bg-surface-container-lowest text-primary font-bold text-xs shadow-sm transition-all flex items-center gap-1.5" data-minutes="25">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          <span>Pomodoro (25m)</span>
+        </button>
+        <button id="mode-short" class="preset px-5 py-2 rounded-full text-on-surface-variant hover:text-on-surface font-bold text-xs transition-all flex items-center gap-1.5" data-minutes="5">
+          <span>Short Break (5m)</span>
+        </button>
+        <button id="mode-deep" class="preset px-5 py-2 rounded-full text-on-surface-variant hover:text-on-surface font-bold text-xs transition-all flex items-center gap-1.5" data-minutes="50">
+          <span>Deep Hack (50m)</span>
+        </button>
+      </div>
+
+      <!-- Circular SVG Countdown Ring -->
+      <div class="relative w-72 h-72 flex items-center justify-center my-2">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 300 300">
+          <circle class="text-surface-container-highest" cx="150" cy="150" fill="transparent" r="130" stroke="currentColor" stroke-width="12"></circle>
+          <circle id="timer-ring" class="text-primary timer-ring-circle" cx="150" cy="150" fill="transparent" r="130" stroke="currentColor" stroke-linecap="round" stroke-width="12"></circle>
+        </svg>
+
+        <div class="absolute flex flex-col items-center text-center">
+          <span class="text-xs font-bold text-primary font-label-code uppercase tracking-wider mb-1">FOCUS SPRINT</span>
+          <div class="font-headline-xl text-5xl font-extrabold text-on-surface tracking-tighter" id="timer-clock">25:00</div>
+          <p id="timer-status" class="text-xs text-on-surface-variant font-medium mt-1">Ready when you are.</p>
+        </div>
+      </div>
+
+      <!-- XP Incentive -->
+      <div class="mt-4 mb-6 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200">
+        <span class="material-symbols-outlined text-[16px] text-amber-500">bolt</span>
+        <span>+30 XP upon session completion</span>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-4">
+        <button id="timer-reset" class="tactile-ghost w-12 h-12 rounded-full bg-surface-container-low border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" title="Reset Session">
+          <span class="material-symbols-outlined text-[20px]">restart_alt</span>
+        </button>
+
+        <button id="timer-start" class="tactile-primary px-10 py-3.5 rounded-full bg-primary text-on-primary font-bold text-sm flex items-center gap-2 shadow-md">
+          <span class="material-symbols-outlined text-[22px]">play_arrow</span>
+          <span>Start Focus</span>
+        </button>
+
+        <button id="skip-btn" class="tactile-ghost w-12 h-12 rounded-full bg-surface-container-low border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" title="Skip Session">
+          <span class="material-symbols-outlined text-[20px]">skip_next</span>
+        </button>
+      </div>
+
+      <!-- Session Complete Form -->
+      <div id="timer-save-form" class="mt-6 w-full max-w-sm hidden">
+        <div class="p-4 rounded-2xl bg-secondary-fixed/50 border border-secondary text-center">
+          <div class="text-xs font-bold text-on-secondary-fixed mb-2">🎉 Session Complete! +30 XP Unlocked</div>
+          <a href="dashboard.html" class="w-full py-2 px-4 rounded-full bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+            <span>Claim XP &amp; Return to Dashboard</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- RIGHT: Telemetry & Soundscape (4 cols) -->
+  <aside class="lg:col-span-4 flex flex-col gap-6">
+
+    <!-- Today's Focus Stats -->
+    <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-5 shadow-sm flex flex-col gap-4">
+      <div class="flex items-center justify-between pb-3 border-b border-outline-variant">
+        <h2 class="text-sm font-bold text-on-surface">Today's Focus Log</h2>
+        <span class="text-xs text-secondary font-bold">Active Habit</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-center">
+          <div class="text-headline-sm font-bold text-on-surface">2.5 hrs</div>
+          <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">Time Focused</div>
+        </div>
+        <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-center">
+          <div class="text-headline-sm font-bold text-primary">3 Sprints</div>
+          <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">Sessions Done</div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-on-surface-variant">Daily Goal: 4 Hours</span>
+          <span class="font-bold text-primary font-label-code">62%</span>
+        </div>
+        <div class="w-full bg-surface-container-high rounded-full h-2.5 overflow-hidden">
+          <div class="bg-primary h-full rounded-full w-[62%]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ambient Soundscapes -->
+    <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-5 shadow-sm flex flex-col gap-3">
+      <div class="flex items-center justify-between pb-2 border-b border-outline-variant">
+        <h2 class="text-sm font-bold text-on-surface">Ambient Soundscapes</h2>
+        <span class="text-[10px] text-on-surface-variant">Click to select</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button class="p-3 rounded-xl bg-primary-fixed border-2 border-primary text-left flex items-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-[18px] text-primary">water_drop</span>
+          <span class="text-xs font-bold text-on-primary-fixed">Lo-Fi Rain</span>
+        </button>
+
+        <button class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-left flex items-center gap-2 transition-all hover:bg-surface-container-high">
+          <span class="material-symbols-outlined text-[18px] text-on-surface-variant">coffee</span>
+          <span class="text-xs font-bold text-on-surface">Cafe Vibes</span>
+        </button>
+
+        <button class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-left flex items-center gap-2 transition-all hover:bg-surface-container-high">
+          <span class="material-symbols-outlined text-[18px] text-on-surface-variant">waves</span>
+          <span class="text-xs font-bold text-on-surface">White Stream</span>
+        </button>
+
+        <button class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-left flex items-center gap-2 transition-all hover:bg-surface-container-high">
+          <span class="material-symbols-outlined text-[18px] text-on-surface-variant">headphones</span>
+          <span class="text-xs font-bold text-on-surface">Binaural 40Hz</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Connected Links -->
+    <div class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col gap-2">
+      <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1">Quick Navigation</div>
+      <a href="quiz.html" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low text-xs font-medium transition-colors">
+        <span class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] text-primary">quiz</span>Daily Quizzes
+        </span>
+        <span class="text-primary font-bold">→</span>
+      </a>
+      <a href="resources.html" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low text-xs font-medium transition-colors">
+        <span class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] text-sky-600">auto_stories</span>Curated Resources
+        </span>
+        <span class="text-primary font-bold">→</span>
+      </a>
+      <a href="leaderboard.html" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low text-xs font-medium transition-colors">
+        <span class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] text-amber-600">leaderboard</span>XP Leaderboard
+        </span>
+        <span class="text-primary font-bold">→</span>
+      </a>
+    </div>
+
+  </aside>
+</main>
+
+<script src="../static/js/main.js"></script>
+<script src="../static/js/timer.js"></script>
+</body>
+</html>

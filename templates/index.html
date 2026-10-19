@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Learn Loop — Competitive Gamified Learning Platform</title>
+  <meta name="description" content="Build consistent coding habits with daily streaks, XP points, interactive quizzes, and competitive leaderboards."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config={theme:{extend:{colors:{"on-surface":"#131b2e","on-primary-fixed":"#07006c","on-primary-fixed-variant":"#2f2ebe","on-primary":"#ffffff","primary-container":"#6063ee","surface-container":"#eaedff","surface-container-high":"#e2e7ff","surface-container-highest":"#dae2fd","secondary-fixed":"#6ffbbe","primary-fixed-dim":"#c0c1ff","background":"#faf8ff","surface":"#faf8ff","surface-container-lowest":"#ffffff","secondary":"#006c49","primary-fixed":"#e1e0ff","tertiary-fixed":"#ffddb8","on-surface-variant":"#464554","primary":"#4648d4","outline-variant":"#c7c4d7","surface-container-low":"#f2f3ff","on-secondary":"#ffffff","outline":"#767586","error":"#ba1a1a","on-tertiary-fixed":"#2a1700","on-secondary-fixed-variant":"#005236","secondary-fixed-dim":"#4edea3","on-secondary-fixed":"#002113","inverse-surface":"#283044","inverse-on-surface":"#eef0ff"},fontFamily:{"body-md":["Inter"],"label-bold":["Inter"],"label-code":["JetBrains Mono"],"headline-xl":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-md":["Plus Jakarta Sans"]}}}}
+  </script>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+</head>
+<body class="bg-background text-on-surface antialiased flex flex-col min-h-screen">
+
+<!-- TOP NAV -->
+<header class="w-full border-b border-outline-variant bg-surface-container-lowest/90 backdrop-blur-md px-6 py-3.5 flex items-center justify-between gap-4 top-0 sticky z-50 shadow-sm">
+  <div class="flex items-center gap-8">
+    <a href="index.html" class="text-headline-sm font-bold text-primary flex items-center gap-2.5 tracking-tight">
+      <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined text-[22px]">all_inclusive</span>
+      </div>
+      <span class="font-headline-sm">Nexus Learn Loop</span>
+    </a>
+    <nav class="hidden lg:flex items-center gap-6 text-sm font-medium">
+      <a href="dashboard.html" class="text-on-surface-variant hover:text-primary transition-colors">Dashboard</a>
+      <a href="lwb.html" class="text-on-surface-variant hover:text-[#23a55a] transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px] text-[#23a55a]">groups</span>
+        <span>Buddies (LWB)</span>
+      </a>
+      <a href="ai_agent.html" class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px] text-primary">smart_toy</span>
+        <span>AI Mentor</span>
+      </a>
+      <a href="quiz.html" class="text-on-surface-variant hover:text-primary transition-colors">Challenges</a>
+      <a href="leaderboard.html" class="text-on-surface-variant hover:text-primary transition-colors">Leaderboard</a>
+      <a href="timer.html" class="text-on-surface-variant hover:text-primary transition-colors">Study Timer</a>
+      <a href="resources.html" class="text-on-surface-variant hover:text-primary transition-colors">Resources</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-3">
+    <a href="login.html" class="tactile-ghost px-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface font-label-bold text-xs hover:bg-surface-container-low transition-colors">Sign In</a>
+    <a href="register.html" class="tactile-primary px-5 py-2 rounded-full bg-primary text-on-primary font-label-bold text-xs flex items-center gap-1.5 shadow-sm">
+      <span class="material-symbols-outlined text-[16px]">rocket_launch</span>Get Started
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="relative overflow-hidden pt-16 pb-20 px-6">
+  <div class="absolute inset-0 bg-gradient-to-b from-primary-fixed/40 via-background to-background pointer-events-none"></div>
+
+  <div class="relative z-10 max-w-[1140px] w-full mx-auto text-center">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-fixed border border-primary/20 text-on-primary-fixed font-label-bold text-xs mb-6">
+      <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+      <span>Duolingo-inspired Consistency &bull; GitHub-inspired Showcase</span>
+    </div>
+
+    <h1 class="text-headline-xl sm:text-5xl font-extrabold text-on-surface tracking-tight max-w-3xl mx-auto leading-tight mb-5">
+      Learn Together. Compete Fairly. <span class="text-primary">Grow Endlessly.</span>
+    </h1>
+
+    <p class="text-on-surface-variant text-base sm:text-lg max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+      A gamified learning platform built for Nexus learners. Complete daily code challenges, protect your streak, track study sessions, and climb the ranks.
+    </p>
+
+    <!-- CTAs -->
+    <div class="flex flex-wrap items-center justify-center gap-4 mb-12">
+      <a href="register.html" class="tactile-primary px-8 py-3.5 rounded-full bg-primary text-on-primary font-label-bold text-sm flex items-center gap-2 shadow-md hover:bg-primary/95 transition-all">
+        <span>Start Your Loop</span>
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </a>
+      <a href="dashboard.html" class="tactile-ghost px-7 py-3.5 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface font-label-bold text-sm flex items-center gap-2 hover:bg-surface-container-low transition-colors">
+        <span class="material-symbols-outlined text-[18px] text-primary">dashboard</span>
+        <span>Explore Dashboard</span>
+      </a>
+      <a href="quiz.html" class="px-6 py-3.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-bold text-sm flex items-center gap-2 hover:bg-secondary-fixed-dim transition-colors">
+        <span class="material-symbols-outlined text-[18px] text-secondary">bolt</span>
+        <span>Try Daily Challenge</span>
+      </a>
+      <a href="lwb.html" class="px-6 py-3.5 rounded-full bg-[#1e1f22] text-white font-label-bold text-sm flex items-center gap-2 hover:bg-[#2b2d31] transition-colors border border-[#3f4147]">
+        <span class="material-symbols-outlined text-[18px] text-[#23a55a]">groups</span>
+        <span>Study With Buddies (LWB)</span>
+      </a>
+    </div>
+
+    <!-- Live Quick Metrics -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+      <div class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center">
+        <div class="text-headline-md font-bold text-primary">7 Days</div>
+        <div class="text-xs text-on-surface-variant font-medium mt-0.5">Average Streak</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center">
+        <div class="text-headline-md font-bold text-secondary">100+</div>
+        <div class="text-xs text-on-surface-variant font-medium mt-0.5">Coding Challenges</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center">
+        <div class="text-headline-md font-bold text-tertiary">2,450 XP</div>
+        <div class="text-xs text-on-surface-variant font-medium mt-0.5">Weekly Rewards</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center">
+        <div class="text-headline-md font-bold text-on-surface">YPT Style</div>
+        <div class="text-xs text-on-surface-variant font-medium mt-0.5">Deep Study Timer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CORE FEATURES (CLEAN & DIRECT) -->
+<section id="features" class="py-16 px-6 max-w-[1140px] w-full mx-auto">
+  <div class="text-center max-w-xl mx-auto mb-12">
+    <h2 class="text-headline-lg font-bold text-on-surface tracking-tight">Everything You Need to Succeed</h2>
+    <p class="text-sm text-on-surface-variant mt-2">Every feature is connected to help you stay accountable and advance your engineering skills.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Card 1: Daily Challenges -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div>
+        <div class="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[26px]">terminal</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1.5">Questions &amp; Challenges</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Solve interactive daily coding quizzes, test your core concepts, and earn instant XP with explanations.
+        </p>
+      </div>
+      <div class="pt-5 mt-4 border-t border-outline-variant/60">
+        <a href="quiz.html" class="inline-flex items-center gap-1.5 text-primary font-label-bold text-xs hover:underline">
+          <span>Start Challenge</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card 2: Study Timer -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div>
+        <div class="w-12 h-12 rounded-xl bg-secondary-fixed text-secondary flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[26px]">timer</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1.5">Study Timer (YPT-Inspired)</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Log focused study hours with Pomodoro presets, lo-fi soundscapes, and automatic XP bonus tracking.
+        </p>
+      </div>
+      <div class="pt-5 mt-4 border-t border-outline-variant/60">
+        <a href="timer.html" class="inline-flex items-center gap-1.5 text-secondary font-label-bold text-xs hover:underline">
+          <span>Open Study Timer</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card 3: Leaderboard -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div>
+        <div class="w-12 h-12 rounded-xl bg-tertiary-fixed text-tertiary flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[26px]">leaderboard</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1.5">Competitive Leaderboard</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Compete on XP rankings, view top streaks, and track how you measure up against other Nexus learners.
+        </p>
+      </div>
+      <div class="pt-5 mt-4 border-t border-outline-variant/60">
+        <a href="leaderboard.html" class="inline-flex items-center gap-1.5 text-tertiary font-label-bold text-xs hover:underline">
+          <span>View Rankings</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card 4: Showcase & Profile -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div>
+        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[26px]">badge</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1.5">GitHub-Style Showcase</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Display your 52-week activity heatmap, unlocked badges, mastered skills, and ongoing learning goals.
+        </p>
+      </div>
+      <div class="pt-5 mt-4 border-t border-outline-variant/60">
+        <a href="profile.html" class="inline-flex items-center gap-1.5 text-purple-700 font-label-bold text-xs hover:underline">
+          <span>View Profile</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card 5: Resources -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div>
+        <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[26px]">menu_book</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1.5">Curated Resources</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Hand-picked documentation, cheat-sheets, and tutorials organized cleanly by technology and track.
+        </p>
+      </div>
+      <div class="pt-5 mt-4 border-t border-outline-variant/60">
+        <a href="resources.html" class="inline-flex items-center gap-1.5 text-sky-700 font-label-bold text-xs hover:underline">
+          <span>Explore Library</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card 6: Daily Streaks -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-primary/50 transition-all flex flex-col justify-between">
+      <div>
+        <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[26px]">local_fire_department</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1.5">Streak Habit Engine</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Never break the loop. Maintain your daily habit streak with freeze tokens, milestone badges, and XP multipliers.
+        </p>
+      </div>
+      <div class="pt-5 mt-4 border-t border-outline-variant/60">
+        <a href="dashboard.html" class="inline-flex items-center gap-1.5 text-rose-600 font-label-bold text-xs hover:underline">
+          <span>Go to Dashboard</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALL TO ACTION BANNER -->
+<section class="my-12 px-6">
+  <div class="max-w-[1140px] w-full mx-auto p-10 sm:p-12 rounded-3xl bg-gradient-to-r from-primary to-primary-container text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-lg">
+    <div>
+      <h2 class="text-headline-lg sm:text-3xl font-extrabold tracking-tight mb-2">Ready to level up your consistency?</h2>
+      <p class="text-white/80 text-sm sm:text-base max-w-lg">Join fellow Nexus learners today. Free forever for the community.</p>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <a href="register.html" class="px-7 py-3.5 rounded-full bg-white text-primary font-bold text-sm shadow hover:bg-white/95 transition-all">Create Account</a>
+      <a href="login.html" class="px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all">Sign In</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="mt-auto border-t border-outline-variant bg-surface-container-lowest py-8 px-6">
+  <div class="max-w-[1140px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-[18px]">all_inclusive</span>
+      <span class="font-bold text-on-surface">Nexus Learn Loop</span>
+      <span>&bull; Learn together. Compete fairly. Grow endlessly.</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-4">
+      <a href="dashboard.html" class="hover:text-primary transition-colors">Dashboard</a>
+      <a href="ai_agent.html" class="hover:text-primary transition-colors">AI Mentor</a>
+      <a href="quiz.html" class="hover:text-primary transition-colors">Quiz</a>
+      <a href="leaderboard.html" class="hover:text-primary transition-colors">Leaderboard</a>
+      <a href="timer.html" class="hover:text-primary transition-colors">Timer</a>
+      <a href="resources.html" class="hover:text-primary transition-colors">Resources</a>
+      <a href="profile.html" class="hover:text-primary transition-colors">Profile</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/js/main.js"></script>
+</body>
+</html>
