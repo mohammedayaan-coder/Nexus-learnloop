@@ -66,5 +66,3 @@
    - Added "Buddies (LWB)" navigation links to all top headers: [dashboard.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/dashboard.html), [index.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/index.html), [ai_agent.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/ai_agent.html), [quiz.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/quiz.html), [result.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/result.html), [leaderboard.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/leaderboard.html), [timer.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/timer.html), and [resources.html](file:///c:/Users/m_aya/OneDrive/Desktop/Nexus-learnloop/templates/resources.html).
    - Embedded a Discord Live Lounge card into the main dashboard column. 
 
-
-   

@@ -95,7 +95,12 @@
         <p class="text-xs text-on-surface-variant mt-1">Enter your credentials to continue your learning sprint.</p>
       </div>
 
-      <form id="login-form" action="dashboard.html" method="get" class="space-y-4">
+      <div id="login-alert" class="hidden p-3 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-700 border border-rose-200" role="alert">
+        <span class="material-symbols-outlined text-[16px]">error</span>
+        <span id="login-alert-msg"></span>
+      </div>
+
+      <form id="login-form" action="dashboard.html" method="post" class="space-y-4">
         <div>
           <label for="username" class="block text-xs font-bold text-on-surface mb-1">Username or Email</label>
           <div class="relative">

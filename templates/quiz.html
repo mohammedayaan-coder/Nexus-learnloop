@@ -183,19 +183,24 @@
     </div>
   </div>
 
-  <!-- Bottom Action Bar -->
-  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
-    <a href="dashboard.html" class="px-5 py-2.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors">
-      ← Back to Dashboard
-    </a>
-    <div class="flex items-center gap-3">
-      <span id="quiz-feedback" class="text-xs font-bold text-secondary hidden">Correct! Nice work.</span>
-      <a id="submit-quiz-btn" href="result.html" class="tactile-primary px-8 py-2.5 rounded-full bg-secondary text-on-secondary font-bold text-xs flex items-center gap-2 shadow-sm">
-        <span>Submit Answer</span>
-        <span class="material-symbols-outlined text-[16px]">check</span>
+  <!-- Bottom Action Bar Form -->
+  <form id="quiz-form" action="result.html" method="post">
+    <input type="hidden" name="quiz_id" value="jinja2-interpolation"/>
+    <input type="hidden" name="selected_option" id="quiz-selected-option" value="B"/>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
+      <a href="dashboard.html" class="px-5 py-2.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors">
+        ← Back to Dashboard
       </a>
+      <div class="flex items-center gap-3">
+        <span id="quiz-feedback" class="text-xs font-bold text-secondary hidden">Correct! Nice work.</span>
+        <button type="submit" id="submit-quiz-btn" class="tactile-primary px-8 py-2.5 rounded-full bg-secondary text-on-secondary font-bold text-xs flex items-center gap-2 shadow-sm hover:bg-secondary/90 transition-all">
+          <span>Submit Answer</span>
+          <span class="material-symbols-outlined text-[16px]">check</span>
+        </button>
+      </div>
     </div>
-  </div>
+  </form>
 
 </main>
 
@@ -214,7 +219,8 @@
   // Option selection
   const options = document.querySelectorAll(".quiz-option");
   const feedback = document.getElementById("quiz-feedback");
-  const submitBtn = document.getElementById("submit-quiz-btn");
+  const selectedInput = document.getElementById("quiz-selected-option");
+  const scoreInput = document.getElementById("quiz-score");
 
   options.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -224,17 +230,21 @@
       });
 
       const isCorrect = btn.dataset.correct === "true";
+      const key = btn.dataset.key || "B";
+      if (selectedInput) selectedInput.value = key;
+      if (scoreInput) scoreInput.value = isCorrect ? "1" : "0";
+
       if (isCorrect) {
         btn.classList.add("border-secondary", "bg-emerald-50/50");
         if (feedback) {
-          feedback.textContent = "✓ Option B is correct (+20 XP)";
+          feedback.textContent = `✓ Option ${key} is correct (+20 XP)`;
           feedback.className = "text-xs font-bold text-secondary";
           feedback.classList.remove("hidden");
         }
       } else {
         btn.classList.add("border-rose-400", "bg-rose-50/50");
         if (feedback) {
-          feedback.textContent = "✗ That's not quite right. Try again!";
+          feedback.textContent = `✗ Option ${key} is incorrect. Try again!`;
           feedback.className = "text-xs font-bold text-rose-600";
           feedback.classList.remove("hidden");
         }

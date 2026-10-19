@@ -64,10 +64,11 @@
     <a href="leaderboard.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Leaderboard</a>
     <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
   </nav>
-  <div class="flex items-center gap-3">
-    <a href="login.html" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
-      <span class="material-symbols-outlined text-[16px]">logout</span>Sign Out
-    </a>
+    <form action="/logout" method="post" class="inline">
+      <button type="submit" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px]">logout</span>Sign Out
+      </button>
+    </form>
   </div>
 </header>
 
@@ -77,15 +78,15 @@
   <!-- Profile Hero Banner -->
   <div class="p-8 rounded-3xl bg-gradient-to-r from-primary to-primary-container text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
     <div class="flex items-center gap-5">
-      <div class="w-20 h-20 rounded-full bg-white text-primary font-extrabold text-2xl flex items-center justify-center shadow-lg border-4 border-white/30 shrink-0">
+      <div class="w-20 h-20 rounded-full bg-white text-primary font-extrabold text-2xl flex items-center justify-center shadow-lg border-4 border-white/30 shrink-0" data-stat="profile-avatar">
         U
       </div>
       <div>
         <div class="flex items-center gap-2 mb-1">
-          <h1 class="text-2xl font-bold">Nexus Learner</h1>
+          <h1 class="text-2xl font-bold" data-stat="profile-username">Nexus Learner</h1>
           <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold">Diamond League</span>
         </div>
-        <p class="text-white/80 text-xs">Member since Oct 2026 &bull; Web &amp; Python Engineering Track</p>
+        <p class="text-white/80 text-xs"><span data-stat="profile-joined">Joined Oct 2026</span> &bull; <span data-stat="profile-goals">Web &amp; Python Engineering Track</span></p>
       </div>
     </div>
 
@@ -103,27 +104,63 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <a href="leaderboard.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-primary/50 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Total XP</div>
-      <div class="text-headline-md font-bold text-primary mt-1">1,420</div>
-      <div class="text-[11px] text-secondary font-semibold">Rank #4 Global</div>
+      <div class="text-headline-md font-bold text-primary mt-1" data-stat="xp-val">1,420</div>
+      <div class="text-[11px] text-secondary font-semibold">Rank #<span data-stat="rank">4</span> Global</div>
     </a>
 
     <a href="quiz.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-rose-300 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Daily Streak</div>
-      <div class="text-headline-md font-bold text-rose-600 mt-1">7 Days 🔥</div>
-      <div class="text-[11px] text-on-surface-variant">Best: 14 Days</div>
+      <div class="text-headline-md font-bold text-rose-600 mt-1"><span data-stat="streak-val">7</span> Days 🔥</div>
+      <div class="text-[11px] text-on-surface-variant">Active Streak</div>
     </a>
 
     <a href="quiz.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-emerald-300 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Quizzes Solved</div>
-      <div class="text-headline-md font-bold text-secondary mt-1">32</div>
-      <div class="text-[11px] text-on-surface-variant">80% Accuracy</div>
+      <div class="text-headline-md font-bold text-secondary mt-1" data-stat="quizzes-solved">32</div>
+      <div class="text-[11px] text-on-surface-variant"><span data-stat="accuracy">80</span>% Accuracy</div>
     </a>
 
     <a href="timer.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-purple-300 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Study Hours</div>
-      <div class="text-headline-md font-bold text-purple-700 mt-1">14.5 hrs</div>
-      <div class="text-[11px] text-on-surface-variant">This Week</div>
+      <div class="text-headline-md font-bold text-purple-700 mt-1"><span data-stat="study-hours">14.5</span> hrs</div>
+      <div class="text-[11px] text-on-surface-variant"><span data-stat="sessions-today">3</span> sprints logged</div>
     </a>
+  </div>
+
+  <!-- Edit Learner Profile Card -->
+  <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-base font-bold text-on-surface">Learner Profile &amp; Focus Goals</h2>
+        <p class="text-xs text-on-surface-variant">Update your public bio, learning goals, and technology skills (+15 XP)</p>
+      </div>
+      <span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold">SQLite Persisted</span>
+    </div>
+
+    <form action="profile.html" method="post" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="learning_goals" class="block text-xs font-bold text-on-surface mb-1">Primary Learning Goal / Track</label>
+          <input id="learning_goals" name="learning_goals" type="text" value="Web &amp; Python Full-Stack" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition-all" placeholder="e.g. Full-Stack Python &amp; Flask"/>
+        </div>
+        <div>
+          <label for="skills" class="block text-xs font-bold text-on-surface mb-1">Key Skills &amp; Technologies</label>
+          <input id="skills" name="skills" type="text" value="Python, Flask, SQLite, Git" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition-all" placeholder="e.g. Python, Flask, SQLite, TailwindCSS"/>
+        </div>
+      </div>
+
+      <div>
+        <label for="bio" class="block text-xs font-bold text-on-surface mb-1">Learner Bio</label>
+        <textarea id="bio" name="bio" rows="2" class="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition-all" placeholder="Share your learning focus or coding journey...">Passionate developer building daily habits and leveling up with Python.</textarea>
+      </div>
+
+      <div class="flex justify-end">
+        <button type="submit" class="tactile-primary px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-primary/95 transition-all">
+          <span class="material-symbols-outlined text-[16px]">save</span>
+          <span>Save Profile (+15 XP)</span>
+        </button>
+      </div>
+    </form>
   </div>
 
   <!-- Activity Heatmap (GitHub-Style) -->

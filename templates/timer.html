@@ -74,7 +74,7 @@
   <div class="flex items-center gap-3">
     <div class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200">
       <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
-      <span class="font-label-code text-xs font-bold">1,420 XP</span>
+      <span class="font-label-code text-xs font-bold" data-stat="xp">1,420 XP</span>
     </div>
     <a href="profile.html" class="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary-fixed text-primary font-bold text-sm flex items-center justify-center hover:ring-primary transition-all">
       U
@@ -153,15 +153,16 @@
       </div>
 
       <!-- Session Complete Form -->
-      <div id="timer-save-form" class="mt-6 w-full max-w-sm hidden">
+      <form id="timer-save-form" action="timer.html" method="post" class="mt-6 w-full max-w-sm hidden">
+        <input type="hidden" name="duration_minutes" id="timer-minutes" value="25"/>
         <div class="p-4 rounded-2xl bg-secondary-fixed/50 border border-secondary text-center">
           <div class="text-xs font-bold text-on-secondary-fixed mb-2">🎉 Session Complete! +30 XP Unlocked</div>
-          <a href="dashboard.html" class="w-full py-2 px-4 rounded-full bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+          <button type="submit" id="timer-save" class="w-full py-2.5 px-4 rounded-full bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm hover:bg-secondary/90 transition-all">
             <span>Claim XP &amp; Return to Dashboard</span>
             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </a>
+          </button>
         </div>
-      </div>
+      </form>
 
     </div>
 
@@ -179,11 +180,11 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-center">
-          <div class="text-headline-sm font-bold text-on-surface">2.5 hrs</div>
+          <div class="text-headline-sm font-bold text-on-surface"><span data-stat="study-hours">2.5</span> hrs</div>
           <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">Time Focused</div>
         </div>
         <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-center">
-          <div class="text-headline-sm font-bold text-primary">3 Sprints</div>
+          <div class="text-headline-sm font-bold text-primary"><span data-stat="sessions-today">3</span> Sprints</div>
           <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">Sessions Done</div>
         </div>
       </div>

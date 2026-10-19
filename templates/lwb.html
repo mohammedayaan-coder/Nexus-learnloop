@@ -22,7 +22,7 @@
 <body class="bg-[#1e1f22] text-[#dbdee1] h-full flex flex-col font-sans overflow-hidden select-none antialiased">
 
   <!-- TOP MINIMAL NEXUS APP BAR -->
-  <header class="h-9 bg-[#1e1f22] border-b border-[#2b2d31] px-3 flex items-center justify-between text-xs text-[#949ba4] shrink-0 z-40">
+  <header class="h-10 bg-[#1e1f22] border-b border-[#2b2d31] px-3 flex items-center justify-between text-xs text-[#949ba4] shrink-0 z-40">
     <div class="flex items-center gap-3">
       <a href="dashboard.html" class="flex items-center gap-1.5 text-white font-bold hover:text-[#5865f2] transition-colors">
         <span class="material-symbols-outlined text-[16px] text-[#5865f2]">all_inclusive</span>
@@ -33,7 +33,9 @@
         <span class="material-symbols-outlined text-[14px] text-[#23a55a]">groups</span>
         <span>Learn With Buddies (LWB)</span>
       </span>
-      <span class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-[#23a55a]/20 text-[#23a55a] text-[10px] font-bold">DISCORD HYBRID</span>
+      <span class="hidden sm:inline-block px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold tracking-wide">
+        ⚡ Roadmap Preview &bull; Needs WebRTC / Socket.IO Backend
+      </span>
     </div>
 
     <div class="flex items-center gap-4 text-[11px]">
@@ -46,7 +48,7 @@
         <span>AI Mentor</span>
       </a>
       <div class="flex items-center gap-1.5 bg-[#2b2d31] px-2 py-0.5 rounded-full text-amber-400 font-mono text-[10px] font-bold">
-        <span>⚡ 1,420 XP</span>
+        <span>⚡ <span data-stat="xp-val">1,420</span> XP</span>
       </div>
     </div>
   </header>
