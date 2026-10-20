@@ -21,3 +21,12 @@ Our Vision
 To create a community where Nexus learners learn new skills, stay consistent, collaborate 
 with peers, showcase their progress, and compete to become better every day. 
 Nexus Learn Loop — Learn together. Compete fairly. Grow endlessly.
+
+## Database
+
+The Flask app initializes the SQLite schema from `database/schema.sql` on startup.
+By default, the database is stored at `instance/nexus.db`; set `DATABASE_PATH` to use a
+different file. Account passwords are stored as Werkzeug password hashes. Learner
+profiles, completed study sessions, quiz results, and XP activity are associated with
+their owning user through foreign keys. Set `SECRET_KEY` to a stable, private value
+when deploying so signed-in sessions remain valid across restarts.

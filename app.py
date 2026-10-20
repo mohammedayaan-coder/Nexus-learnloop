@@ -4,8 +4,14 @@ A competitive, gamified learning platform for Nexus learners, inspired by Duolin
 """
 
 import os
+import sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+from types import SimpleNamespace
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import requests
+from database import database as database_service
 
 # Load environment variables from .env if present
 try:
@@ -15,7 +21,11 @@ except ImportError:
     pass
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "nexus-learn-loop-dev-secret-key-2026")
+app.secret_key = os.getenv("SECRET_KEY") or os.urandom(32)
+app.config["DATABASE"] = os.getenv(
+    "DATABASE_PATH",
+    str(Path(app.instance_path) / "nexus.db"),
+)
 
 # Enable CORS for local file:// previews
 @app.after_request
@@ -25,18 +35,41 @@ def add_cors_headers(response):
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
     return response
 
-# Mock current user context for templates
-class MockUser:
-    is_authenticated = True
-    username = "Learner"
-    email = "learner@nexus.org"
-    streak = 7
-    xp = 1420
-    rank = 4
-
 @app.context_processor
 def inject_user():
-    return dict(current_user=MockUser())
+    user_id = session.get("user_id")
+    user = database_service.get_user_by_id(user_id) if user_id is not None else None
+    if user is None:
+        if user_id is not None:
+            session.pop("user_id", None)
+        return {
+            "current_user": SimpleNamespace(
+                is_authenticated=False,
+                username="Learner",
+                xp=0,
+            )
+        }
+
+    stats = database_service.get_user_stats(user["id"])
+    return {
+        "current_user": SimpleNamespace(
+            is_authenticated=True,
+            id=user["id"],
+            username=user["username"],
+            email=user["email"],
+            xp=stats["total_xp"],
+        )
+    }
+
+
+@app.teardown_appcontext
+def close_database(_error):
+    database_service.close_db(_error)
+
+
+with app.app_context():
+    database_service.init_db()
+
 
 @app.route("/")
 @app.route("/index.html")
@@ -46,42 +79,135 @@ def index():
 @app.route("/dashboard")
 @app.route("/dashboard.html")
 def dashboard():
-    return render_template("dashboard.html")
+    user_id = session.get("user_id")
+    stats = database_service.get_user_stats(user_id) if user_id else {
+        "total_xp": 0,
+        "study_minutes": 0,
+        "study_session_count": 0,
+        "quiz_count": 0,
+        "accuracy_percent": 0,
+        "correct_answers": 0,
+        "total_questions": 0,
+    }
+    return render_template("dashboard.html", stats=stats)
 
 @app.route("/quiz", methods=["GET", "POST"])
 @app.route("/quiz.html", methods=["GET", "POST"])
 def quiz():
     if request.method == "POST":
+        user_id = session.get("user_id")
+        if user_id is None:
+            flash("Sign in to save your quiz result.", "error")
+            return redirect(url_for("login"))
+        answer = request.form.get("answer", "").strip().upper()
+        if answer not in {"A", "B", "C", "D"}:
+            flash("Select an answer before submitting the quiz.", "error")
+            return redirect(url_for("quiz"))
+        database_service.record_quiz_result(
+            user_id,
+            "Python Jinja2 Expression Interpolation",
+            int(answer == "B"),
+            1,
+        )
         return redirect(url_for("result"))
     return render_template("quiz.html")
 
 @app.route("/result")
 @app.route("/result.html")
 def result():
-    return render_template("result.html")
+    user_id = session.get("user_id")
+    quiz_result = database_service.get_latest_quiz_result(user_id) if user_id else None
+    return render_template("result.html", quiz_result=quiz_result)
 
 @app.route("/leaderboard")
 @app.route("/leaderboard.html")
 def leaderboard():
     return render_template("leaderboard.html")
 
-@app.route("/timer", methods=["GET", "POST"])
-@app.route("/timer.html", methods=["GET", "POST"])
+@app.route("/timer")
+@app.route("/timer.html")
 def timer():
-    if request.method == "POST":
-        flash("Study session recorded! +30 XP awarded.", "success")
-        return redirect(url_for("dashboard"))
     return render_template("timer.html")
+
+
+@app.route("/study-sessions", methods=["POST"])
+def save_study_session():
+    user_id = session.get("user_id")
+    if user_id is None:
+        flash("Sign in to save your study session.", "error")
+        return redirect(url_for("login"))
+
+    try:
+        duration_minutes = int(request.form.get("duration_minutes", ""))
+        started_at = datetime.fromisoformat(
+            request.form.get("started_at", "").replace("Z", "+00:00")
+        )
+    except (TypeError, ValueError):
+        flash("The study session details are invalid.", "error")
+        return redirect(url_for("timer"))
+
+    if not 1 <= duration_minutes <= 180:
+        flash("Study sessions must be between 1 and 180 minutes.", "error")
+        return redirect(url_for("timer"))
+    if started_at.tzinfo is None:
+        started_at = started_at.replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    if started_at > now or (now - started_at).total_seconds() > 4 * 60 * 60:
+        flash("The study session start time is invalid.", "error")
+        return redirect(url_for("timer"))
+
+    database_service.record_study_session(
+        user_id,
+        duration_minutes,
+        started_at.astimezone(timezone.utc).isoformat(),
+    )
+    flash("Study session recorded! +30 XP awarded.", "success")
+    return redirect(url_for("dashboard"))
 
 @app.route("/resources")
 @app.route("/resources.html")
 def resources():
     return render_template("resources.html")
 
-@app.route("/profile")
-@app.route("/profile.html")
+@app.route("/profile.html", methods=["GET", "POST"])
+@app.route("/profile", methods=["GET", "POST"])
 def profile():
-    return render_template("profile.html")
+    user_id = session.get("user_id")
+    if request.method == "POST":
+        if user_id is None:
+            flash("Sign in to update your learner profile.", "error")
+            return redirect(url_for("login"))
+        database_service.update_learner_profile(
+            user_id,
+            request.form.get("bio", "").strip()[:1000],
+            request.form.get("learning_goals", "").strip()[:2000],
+            request.form.get("skills", "").strip()[:1000],
+        )
+        flash("Your learner profile has been updated.", "success")
+        return redirect(url_for("profile"))
+
+    user = database_service.get_user_by_id(user_id) if user_id is not None else None
+    learner_profile = (
+        database_service.get_learner_profile(user_id)
+        if user_id is not None
+        else None
+    )
+    stats = (
+        database_service.get_user_stats(user_id)
+        if user_id is not None
+        else {
+            "total_xp": 0,
+            "quiz_count": 0,
+            "accuracy_percent": 0,
+            "study_minutes": 0,
+        }
+    )
+    return render_template(
+        "profile.html",
+        profile_user=user,
+        learner_profile=learner_profile,
+        stats=stats,
+    )
 
 @app.route("/lwb")
 @app.route("/lwb.html")
@@ -217,7 +343,15 @@ def ai_chat():
 @app.route("/login.html", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        flash("Welcome back, Learner!", "success")
+        identifier = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        user = database_service.get_user_by_identifier(identifier)
+        if user is None or not database_service.verify_password(user, password):
+            flash("Invalid username/email or password.", "error")
+            return render_template("login.html"), 401
+        session.clear()
+        session["user_id"] = user["id"]
+        flash(f"Welcome back, {user['username']}!", "success")
         return redirect(url_for("dashboard"))
     return render_template("login.html")
 
@@ -225,12 +359,32 @@ def login():
 @app.route("/register.html", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        if not 3 <= len(username) <= 30:
+            flash("Username must be between 3 and 30 characters.", "error")
+            return render_template("register.html"), 400
+        if not email or len(email) > 254 or "@" not in email:
+            flash("Enter a valid email address.", "error")
+            return render_template("register.html"), 400
+        if len(password) < 8:
+            flash("Password must be at least 8 characters long.", "error")
+            return render_template("register.html"), 400
+        try:
+            user = database_service.create_user(username, email, password)
+        except sqlite3.IntegrityError:
+            flash("That username or email is already registered.", "error")
+            return render_template("register.html"), 409
+        session.clear()
+        session["user_id"] = user["id"]
         flash("Account created successfully! Welcome to your learning loop.", "success")
         return redirect(url_for("dashboard"))
     return render_template("register.html")
 
 @app.route("/logout")
 def logout():
+    session.clear()
     flash("You have been signed out.", "info")
     return redirect(url_for("index"))
 

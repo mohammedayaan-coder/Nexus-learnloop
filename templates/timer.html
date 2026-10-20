@@ -74,7 +74,7 @@
   <div class="flex items-center gap-3">
     <div class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200">
       <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
-      <span class="font-label-code text-xs font-bold">1,420 XP</span>
+      <span class="font-label-code text-xs font-bold">{{ "{:,}".format(current_user.xp) }} XP</span>
     </div>
     <a href="profile.html" class="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary-fixed text-primary font-bold text-sm flex items-center justify-center hover:ring-primary transition-all">
       U
@@ -84,6 +84,11 @@
 
 <!-- MAIN TIMER CONTAINER -->
 <main class="flex-1 max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash lg:col-span-12 rounded-xl border border-outline-variant bg-surface-container-low p-3 text-xs font-semibold" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
 
   <!-- LEFT: Focus Timer (8 cols) -->
   <section class="lg:col-span-8 flex flex-col gap-6">
@@ -153,15 +158,17 @@
       </div>
 
       <!-- Session Complete Form -->
-      <div id="timer-save-form" class="mt-6 w-full max-w-sm hidden">
+      <form id="timer-save-form" action="{{ url_for('save_study_session') }}" method="post" class="mt-6 w-full max-w-sm hidden">
+        <input id="timer-minutes" type="hidden" name="duration_minutes" value="25"/>
+        <input id="timer-started-at" type="hidden" name="started_at"/>
         <div class="p-4 rounded-2xl bg-secondary-fixed/50 border border-secondary text-center">
           <div class="text-xs font-bold text-on-secondary-fixed mb-2">🎉 Session Complete! +30 XP Unlocked</div>
-          <a href="dashboard.html" class="w-full py-2 px-4 rounded-full bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+          <button id="timer-save" type="submit" disabled class="w-full py-2 px-4 rounded-full bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
             <span>Claim XP &amp; Return to Dashboard</span>
             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </a>
+          </button>
         </div>
-      </div>
+      </form>
 
     </div>
 

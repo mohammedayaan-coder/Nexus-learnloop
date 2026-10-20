@@ -65,27 +65,33 @@
     <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
   </nav>
   <div class="flex items-center gap-3">
-    <a href="login.html" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
-      <span class="material-symbols-outlined text-[16px]">logout</span>Sign Out
+    <a href="{{ url_for('logout') if current_user.is_authenticated else url_for('login') }}" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[16px]">{{ "logout" if current_user.is_authenticated else "login" }}</span>
+      {{ "Sign Out" if current_user.is_authenticated else "Sign In" }}
     </a>
   </div>
 </header>
 
 <!-- MAIN PROFILE -->
 <main class="flex-1 max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash rounded-xl border border-outline-variant bg-surface-container-low p-3 text-xs font-semibold" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
 
   <!-- Profile Hero Banner -->
   <div class="p-8 rounded-3xl bg-gradient-to-r from-primary to-primary-container text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
     <div class="flex items-center gap-5">
       <div class="w-20 h-20 rounded-full bg-white text-primary font-extrabold text-2xl flex items-center justify-center shadow-lg border-4 border-white/30 shrink-0">
-        U
+        {{ profile_user.username[0]|upper if profile_user else "L" }}
       </div>
       <div>
         <div class="flex items-center gap-2 mb-1">
-          <h1 class="text-2xl font-bold">Nexus Learner</h1>
+          <h1 class="text-2xl font-bold">{{ profile_user.username if profile_user else "Nexus Learner" }}</h1>
           <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold">Diamond League</span>
         </div>
-        <p class="text-white/80 text-xs">Member since Oct 2026 &bull; Web &amp; Python Engineering Track</p>
+        <p class="text-white/80 text-xs">Member since {{ profile_user.created_at[:10] if profile_user else "—" }}</p>
       </div>
     </div>
 
@@ -99,11 +105,30 @@
     </div>
   </div>
 
+  {% if current_user.is_authenticated %}
+  <form action="{{ url_for('profile') }}" method="post" class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm grid gap-4">
+    <h2 class="text-base font-bold text-on-surface">Learner profile</h2>
+    <label class="grid gap-1 text-xs font-bold text-on-surface-variant">
+      Bio
+      <textarea name="bio" maxlength="1000" rows="2" class="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs font-medium">{{ learner_profile.bio if learner_profile else "" }}</textarea>
+    </label>
+    <label class="grid gap-1 text-xs font-bold text-on-surface-variant">
+      Learning goals
+      <textarea name="learning_goals" maxlength="2000" rows="2" class="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs font-medium">{{ learner_profile.learning_goals if learner_profile else "" }}</textarea>
+    </label>
+    <label class="grid gap-1 text-xs font-bold text-on-surface-variant">
+      Skills
+      <textarea name="skills" maxlength="1000" rows="2" class="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs font-medium">{{ learner_profile.skills if learner_profile else "" }}</textarea>
+    </label>
+    <button type="submit" class="justify-self-start rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-on-primary">Save profile</button>
+  </form>
+  {% endif %}
+
   <!-- Key Metrics 4-Grid -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <a href="leaderboard.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-primary/50 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Total XP</div>
-      <div class="text-headline-md font-bold text-primary mt-1">1,420</div>
+      <div class="text-headline-md font-bold text-primary mt-1">{{ "{:,}".format(stats.total_xp) }}</div>
       <div class="text-[11px] text-secondary font-semibold">Rank #4 Global</div>
     </a>
 
@@ -115,13 +140,13 @@
 
     <a href="quiz.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-emerald-300 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Quizzes Solved</div>
-      <div class="text-headline-md font-bold text-secondary mt-1">32</div>
-      <div class="text-[11px] text-on-surface-variant">80% Accuracy</div>
+      <div class="text-headline-md font-bold text-secondary mt-1">{{ stats.quiz_count }}</div>
+      <div class="text-[11px] text-on-surface-variant">{{ stats.accuracy_percent }}% Accuracy</div>
     </a>
 
     <a href="timer.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-purple-300 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Study Hours</div>
-      <div class="text-headline-md font-bold text-purple-700 mt-1">14.5 hrs</div>
+      <div class="text-headline-md font-bold text-purple-700 mt-1">{{ "%.1f"|format(stats.study_minutes / 60) }} hrs</div>
       <div class="text-[11px] text-on-surface-variant">This Week</div>
     </a>
   </div>

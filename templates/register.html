@@ -101,12 +101,18 @@
         <p class="text-xs text-on-surface-variant mt-1">Start your learning loop in under 30 seconds.</p>
       </div>
 
-      <form id="register-form" action="dashboard.html" method="get" class="space-y-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash mb-4 rounded-xl border border-outline-variant bg-surface-container-low p-3 text-xs font-semibold" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form id="register-form" action="{{ url_for('register') }}" method="post" class="space-y-4">
         <div>
           <label for="username" class="block text-xs font-bold text-on-surface mb-1">Username</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">person</span>
-            <input id="username" name="username" type="text" required class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="learner_nexus"/>
+            <input id="username" name="username" type="text" minlength="3" maxlength="30" required autocomplete="username" class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="learner_nexus"/>
           </div>
         </div>
 
@@ -114,7 +120,7 @@
           <label for="email" class="block text-xs font-bold text-on-surface mb-1">Email Address</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">mail</span>
-            <input id="email" name="email" type="email" required class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="learner@nexus.org"/>
+            <input id="email" name="email" type="email" maxlength="254" required autocomplete="email" class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="learner@nexus.org"/>
           </div>
         </div>
 
@@ -122,7 +128,7 @@
           <label for="password" class="block text-xs font-bold text-on-surface mb-1">Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">lock</span>
-            <input id="password" name="password" type="password" required class="w-full pl-9 pr-10 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="At least 8 characters"/>
+            <input id="password" name="password" type="password" minlength="8" required autocomplete="new-password" class="w-full pl-9 pr-10 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="At least 8 characters"/>
             <button type="button" class="toggle-password absolute right-3 top-2.5 text-outline hover:text-on-surface transition-colors">
               <span class="material-symbols-outlined text-[18px]">visibility</span>
             </button>

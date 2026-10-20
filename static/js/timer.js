@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveButton = document.getElementById("timer-save");
   const saveForm = document.getElementById("timer-save-form");
   const minutesInput = document.getElementById("timer-minutes");
+  const startedAtInput = document.getElementById("timer-started-at");
   const timerRing = document.getElementById("timer-ring");
   const headerCta = document.getElementById("timer-cta");
 
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let interval = null;
   let isRunning = false;
   let finished = false;
+  let startedAt = null;
 
   function updateRing() {
     if (!timerRing) return;
@@ -89,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
       totalSeconds = currentMinutes * 60;
       remaining = totalSeconds;
       finished = false;
+      startedAt = null;
 
       if (minutesInput) minutesInput.value = String(currentMinutes);
       if (saveButton) saveButton.disabled = true;
@@ -112,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     isRunning = true;
+    if (!startedAt) startedAt = new Date();
     updateStartButtonState();
     status.textContent = "Focus sprint in progress...";
 
@@ -124,6 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
         finished = true;
         updateStartButtonState();
         status.textContent = "Session complete! +30 XP unlocked 🎉";
+        if (minutesInput) minutesInput.value = String(currentMinutes);
+        if (startedAtInput && startedAt) startedAtInput.value = startedAt.toISOString();
         if (saveButton) saveButton.disabled = false;
         if (saveForm) saveForm.classList.remove("hidden");
       }
@@ -140,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     stopTimer();
     remaining = totalSeconds;
     finished = false;
+    startedAt = null;
 
     if (saveButton) saveButton.disabled = true;
     if (saveForm) saveForm.classList.add("hidden");
@@ -155,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       stopTimer();
       remaining = 0;
       finished = true;
+      startedAt = null;
       updateStartButtonState();
       status.textContent = "Session skipped. Next loop ready.";
       renderTime();

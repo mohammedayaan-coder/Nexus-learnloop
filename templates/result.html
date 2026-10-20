@@ -95,23 +95,30 @@
       <span>Challenge Complete!</span>
     </div>
 
-    <h1 class="text-headline-lg font-bold text-on-surface tracking-tight mb-2">Great Work, Learner!</h1>
+    {% set quiz_passed = quiz_result and quiz_result.score == quiz_result.total_questions %}
+    <h1 class="text-headline-lg font-bold text-on-surface tracking-tight mb-2">
+      {% if quiz_result %}{{ "Great Work" if quiz_passed else "Quiz Complete" }}, {{ current_user.username }}!{% else %}No quiz result yet{% endif %}
+    </h1>
     <p class="text-sm text-on-surface-variant max-w-md mx-auto mb-6">
-      You correctly solved today's Jinja2 challenge and kept your streak alive.
+      {% if quiz_result %}
+        You answered {{ quiz_result.score }} of {{ quiz_result.total_questions }} questions correctly.
+      {% else %}
+        Complete the daily challenge to save and view your quiz result.
+      {% endif %}
     </p>
 
     <!-- Stat Highlights -->
     <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-6">
       <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-        <div class="text-headline-sm font-bold text-amber-800">+20 XP</div>
+        <div class="text-headline-sm font-bold text-amber-800">+{{ 20 if quiz_passed else 0 }} XP</div>
         <div class="text-[11px] text-amber-700 font-medium mt-0.5">Reward Earned</div>
       </div>
       <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200">
-        <div class="text-headline-sm font-bold text-rose-600">8 Days 🔥</div>
-        <div class="text-[11px] text-rose-700 font-medium mt-0.5">Streak Extended</div>
+        <div class="text-headline-sm font-bold text-rose-600">{{ quiz_result.completed_at[:10] if quiz_result else "—" }}</div>
+        <div class="text-[11px] text-rose-700 font-medium mt-0.5">Completed on</div>
       </div>
       <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-        <div class="text-headline-sm font-bold text-secondary">100%</div>
+        <div class="text-headline-sm font-bold text-secondary">{{ ((quiz_result.score * 100 / quiz_result.total_questions) | round | int) if quiz_result else 0 }}%</div>
         <div class="text-[11px] text-secondary font-medium mt-0.5">Accuracy</div>
       </div>
     </div>
@@ -120,7 +127,13 @@
     <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-left max-w-lg mx-auto mb-6">
       <div class="text-xs font-bold text-on-surface mb-1">Answer Summary:</div>
       <div class="text-xs text-on-surface-variant">
-        You chose <code class="font-label-code text-primary font-bold">&#123;&#123; user_xp &#125;&#125;</code> (Option B). Jinja2 evaluates double curly braces as expressions and automatically escapes HTML output.
+        {% if quiz_result and quiz_passed %}
+          You chose <code class="font-label-code text-primary font-bold">&#123;&#123; user_xp &#125;&#125;</code> (Option B). Jinja2 evaluates double curly braces as expressions and automatically escapes HTML output.
+        {% elif quiz_result %}
+          Your answer was saved. The correct answer is <code class="font-label-code text-primary font-bold">&#123;&#123; user_xp &#125;&#125;</code> (Option B).
+        {% else %}
+          No answer has been submitted yet.
+        {% endif %}
       </div>
     </div>
 
