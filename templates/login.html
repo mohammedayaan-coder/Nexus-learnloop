@@ -100,7 +100,7 @@
         <span id="login-alert-msg"></span>
       </div>
 
-      <form id="login-form" action="dashboard.html" method="post" class="space-y-4">
+      <form id="login-form" action="/login" method="post" class="space-y-4">
         <div>
           <label for="username" class="block text-xs font-bold text-on-surface mb-1">Username or Email</label>
           <div class="relative">
@@ -150,5 +150,51 @@
 </div>
 
 <script src="../static/js/main.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("login-form");
+    const loginAlert = document.getElementById("login-alert");
+    const loginAlertMsg = document.getElementById("login-alert-msg");
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("error")) {
+      loginAlertMsg.textContent = params.get("error");
+      loginAlert.classList.remove("hidden");
+    }
+
+    if (loginForm) {
+      loginForm.addEventListener("submit", async (e) => {
+        if (window.location.protocol === "file:") {
+          e.preventDefault();
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        e.preventDefault();
+        const submitBtn = loginForm.querySelector("button[type='submit']");
+        if (submitBtn) submitBtn.disabled = true;
+
+        const formData = new FormData(loginForm);
+        try {
+          const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Accept": "application/json" },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.location.href = data.redirect || "dashboard.html";
+          } else {
+            loginAlertMsg.textContent = data.error || "Invalid credentials.";
+            loginAlert.classList.remove("hidden");
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        } catch (err) {
+          loginForm.submit();
+        }
+      });
+    }
+  });
+</script>
 </body>
 </html>

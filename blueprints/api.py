@@ -1,7 +1,7 @@
 """
 Nexus Learn Loop — REST API Blueprint
 Provides JSON endpoints for client hydration, leaderboard, authenticated activity tracking,
-and server-authoritative scoring.
+and server-authoritative scoring backed by Supabase.
 """
 
 from flask import Blueprint, request, jsonify, session
@@ -18,6 +18,8 @@ def current_user_api():
         return jsonify({"status": "ok"}), 200
 
     user_id = session.get("user_id")
+    token = session.get("access_token")
+
     if not user_id:
         return jsonify({
             "success": True,
@@ -28,7 +30,7 @@ def current_user_api():
                 "email": "",
                 "bio": "",
                 "learning_goals": "Web & Python Full-Stack",
-                "skills": "Python, Flask, SQLite",
+                "skills": "Python, Flask, Supabase",
                 "created_at": ""
             },
             "stats": {
@@ -43,16 +45,17 @@ def current_user_api():
             }
         })
 
-    user_row = db.get_user(user_id)
+    user_row = db.get_user(user_id, access_token=token)
     if not user_row:
         session.pop("user_id", None)
+        session.pop("access_token", None)
         return jsonify({"success": True, "is_authenticated": False}), 200
 
-    stats = db.get_user_stats(user_id)
+    stats = db.get_user_stats(user_id, access_token=token)
     leaderboard = db.get_leaderboard()
     user_rank = 1
     for idx, row in enumerate(leaderboard, start=1):
-        if row["id"] == user_id:
+        if str(row["id"]) == str(user_id):
             user_rank = idx
             break
 
@@ -63,10 +66,10 @@ def current_user_api():
             "id": user_row["id"],
             "username": user_row["username"],
             "email": user_row["email"],
-            "bio": user_row["bio"] or "",
-            "learning_goals": user_row["learning_goals"] or "Web & Python Full-Stack",
-            "skills": user_row["skills"] or "Python, Flask, SQLite",
-            "created_at": user_row["created_at"] or ""
+            "bio": user_row.get("bio") or "",
+            "learning_goals": user_row.get("learning_goals") or "Web & Python Full-Stack",
+            "skills": user_row.get("skills") or "Python, Flask, Supabase",
+            "created_at": user_row.get("created_at") or ""
         },
         "stats": {
             "xp": stats.get("xp", 0),
@@ -90,9 +93,9 @@ def api_leaderboard():
             {
                 "id": r["id"],
                 "username": r["username"],
-                "learning_goals": r["learning_goals"],
-                "xp": r["xp"],
-                "is_demo": bool(r["is_demo"]) if "is_demo" in r.keys() else False
+                "learning_goals": r.get("learning_goals", ""),
+                "xp": r.get("xp", 0),
+                "is_demo": bool(r.get("is_demo", False))
             }
             for r in rankings
         ]
@@ -106,6 +109,7 @@ def api_record_study_session():
         return jsonify({"status": "ok"}), 200
 
     user_id = session.get("user_id")
+    token = session.get("access_token")
     data = request.get_json(silent=True) or {}
     raw_duration = data.get("duration_minutes", 25)
 
@@ -114,8 +118,8 @@ def api_record_study_session():
     except ValueError as err:
         return jsonify({"success": False, "error": str(err)}), 400
 
-    session_id = db.record_study_session(user_id, duration, xp_earned=server_xp)
-    stats = db.get_user_stats(user_id)
+    session_id = db.record_study_session(user_id, duration, xp_earned=server_xp, access_token=token)
+    stats = db.get_user_stats(user_id, access_token=token)
     return jsonify({
         "success": True,
         "session_id": session_id,
@@ -132,6 +136,7 @@ def api_record_quiz():
         return jsonify({"status": "ok"}), 200
 
     user_id = session.get("user_id")
+    token = session.get("access_token")
     data = request.get_json(silent=True) or {}
     quiz_id = data.get("quiz_id", "jinja2-interpolation")
     answers = data.get("answers") or data.get("selected_option") or "B"
@@ -145,9 +150,10 @@ def api_record_quiz():
         score=eval_result["score"],
         total_questions=eval_result["total_questions"],
         xp_earned=eval_result["xp_earned"],
+        access_token=token,
     )
     session["last_quiz_result_id"] = result_id
-    stats = db.get_user_stats(user_id)
+    stats = db.get_user_stats(user_id, access_token=token)
 
     return jsonify({
         "success": True,
@@ -166,5 +172,6 @@ def api_record_quiz():
 @login_required
 def api_activity_counts():
     user_id = session.get("user_id")
-    counts = db.get_activity_counts(user_id, days=210)
+    token = session.get("access_token")
+    counts = db.get_activity_counts(user_id, days=210, access_token=token)
     return jsonify({"success": True, "counts": counts})

@@ -106,7 +106,7 @@
         <span id="register-alert-msg"></span>
       </div>
 
-      <form id="register-form" action="dashboard.html" method="post" class="space-y-4">
+      <form id="register-form" action="/register" method="post" class="space-y-4">
         <div>
           <label for="username" class="block text-xs font-bold text-on-surface mb-1">Username</label>
           <div class="relative">
@@ -160,5 +160,52 @@
 </div>
 
 <script src="../static/js/main.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const registerForm = document.getElementById("register-form");
+    const registerAlert = document.getElementById("register-alert");
+    const registerAlertMsg = document.getElementById("register-alert-msg");
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("error")) {
+      registerAlertMsg.textContent = params.get("error");
+      registerAlert.classList.remove("hidden");
+    }
+
+    if (registerForm) {
+      registerForm.addEventListener("submit", async (e) => {
+        if (window.location.protocol === "file:") {
+          e.preventDefault();
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        e.preventDefault();
+        const submitBtn = registerForm.querySelector("button[type='submit']");
+        if (submitBtn) submitBtn.disabled = true;
+
+        const formData = new FormData(registerForm);
+        try {
+          const res = await fetch("/register", {
+            method: "POST",
+            headers: { "Accept": "application/json" },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.location.href = data.redirect || "dashboard.html";
+          } else {
+            registerAlertMsg.textContent = data.error || "Registration failed. Please try again.";
+            registerAlert.classList.remove("hidden");
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        } catch (err) {
+          registerForm.submit();
+        }
+      });
+    }
+  });
+</script>
 </body>
 </html>
+

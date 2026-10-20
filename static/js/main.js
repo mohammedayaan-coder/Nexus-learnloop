@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 5. Dynamic GitHub-style activity heatmaps (Connected to SQLite persistence)
+  // 5. Dynamic GitHub-style activity heatmaps (Connected to Supabase persistence)
   const heatmapContainers = document.querySelectorAll("#dashboard-heatmap, #profile-heatmap, .activity-heatmap-grid");
   const shadeClasses = ["bg-surface-container-high", "bg-[#9be9a8]", "bg-[#40c463]", "bg-[#30a14e]", "bg-[#216e39]"];
 
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // 6. Live User Data Hydration from SQLite backend
+  // 6. Live User Data Hydration from Supabase backend
   fetch("/api/current-user")
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {

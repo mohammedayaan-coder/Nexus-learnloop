@@ -1,4 +1,5 @@
--- Nexus Learn Loop SQLite Schema
+-- Legacy SQLite schema. The current app uses database/persistent_store.py for
+-- local-only accounts and database/supabase_schema.sql for Supabase accounts.
 PRAGMA foreign_keys = ON;
 
 -- Users Table

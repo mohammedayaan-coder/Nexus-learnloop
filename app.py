@@ -1,7 +1,7 @@
 """
 Nexus Learn Loop — Application Entrypoint
 A competitive, gamified learning platform for Nexus learners.
-Modular architecture with Flask blueprints, server-authoritative scoring, and strict account boundaries.
+Supabase PostgreSQL & Auth persistence with server-authoritative scoring and strict account boundaries.
 """
 
 import os
@@ -28,11 +28,11 @@ class AuthenticatedUser:
         self.id = user_row["id"]
         self.username = user_row["username"]
         self.email = user_row["email"]
-        self.created_at = user_row["created_at"]
-        self.bio = user_row["bio"] or ""
-        self.learning_goals = user_row["learning_goals"] or "Web & Python Full-Stack"
-        self.skills = user_row["skills"] or "Python, Flask, SQLite"
-        self.is_demo = bool(user_row["is_demo"]) if "is_demo" in user_row.keys() else False
+        self.created_at = user_row.get("created_at") or ""
+        self.bio = user_row.get("bio") or ""
+        self.learning_goals = user_row.get("learning_goals") or "Web & Python Full-Stack"
+        self.skills = user_row.get("skills") or "Python, Flask, Supabase"
+        self.is_demo = bool(user_row.get("is_demo", False))
 
         stats = stats_row or {}
         self.xp = stats.get("xp", 0)
@@ -58,7 +58,7 @@ class AnonymousUser:
     created_at = ""
     bio = ""
     learning_goals = "Web & Python Full-Stack"
-    skills = "Python, Flask, SQLite"
+    skills = "Python, Flask, Supabase"
     is_demo = False
     xp = 0
     activities_completed = 0
@@ -76,19 +76,21 @@ class AnonymousUser:
 def get_current_user():
     """Resolve currently authenticated session user or return AnonymousUser."""
     user_id = session.get("user_id")
+    token = session.get("access_token")
     if user_id:
-        user_row = db.get_user(user_id)
+        user_row = db.get_user(user_id, access_token=token)
         if user_row:
-            stats = db.get_user_stats(user_id)
+            stats = db.get_user_stats(user_id, access_token=token)
             leaderboard = db.get_leaderboard()
             user_rank = 1
             for idx, row in enumerate(leaderboard, start=1):
-                if row["id"] == user_id:
+                if str(row["id"]) == str(user_id):
                     user_rank = idx
                     break
             return AuthenticatedUser(user_row, stats, user_rank)
         # Clear stale or deleted user session
         session.pop("user_id", None)
+        session.pop("access_token", None)
     return AnonymousUser()
 
 
@@ -104,13 +106,13 @@ def create_app():
         SESSION_COOKIE_SECURE=os.getenv("FLASK_ENV", "").lower() == "production",
     )
 
-    # Initialize SQLite database schema and demo seed peers
+    # Initialize persistence
     with app.app_context():
         try:
             db.init_db()
             db.seed_defaults_if_empty()
         except Exception as e:
-            print(f"[Database Initialization Warning]: {e}")
+            print(f"[Supabase Database Notice]: {e}")
 
     # Secure CORS handler (avoids wildcard '*' with credentials)
     @app.after_request

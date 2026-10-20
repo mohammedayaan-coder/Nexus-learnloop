@@ -3,30 +3,24 @@ Automated tests for Nexus Learn Loop — Authentication Boundaries & Session Sec
 Runs natively via Python's built-in unittest module.
 """
 
+import os
 import unittest
-import tempfile
-from pathlib import Path
 from app import create_app
 import database.database as db
 
 
 class AuthAndBoundariesTestCase(unittest.TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.test_db = Path(self.temp_dir.name) / "test_nexus.db"
-        db.init_db(str(self.test_db))
-        db.seed_defaults_if_empty(str(self.test_db))
-
-        self.original_default = db.DEFAULT_DATABASE_PATH
-        db.DEFAULT_DATABASE_PATH = self.test_db
+        os.environ["NEXUS_MEMORY_DB"] = "1"
+        db.init_db()
+        db.seed_defaults_if_empty()
 
         self.app = create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
 
     def tearDown(self):
-        db.DEFAULT_DATABASE_PATH = self.original_default
-        self.temp_dir.cleanup()
+        os.environ.pop("NEXUS_MEMORY_DB", None)
 
     def test_guest_cannot_access_dashboard(self):
         """Guest visitors must not silently login as demo learner; should be redirected."""
@@ -80,9 +74,11 @@ class AuthAndBoundariesTestCase(unittest.TestCase):
 
     def test_logout_clears_session(self):
         """Logging out clears session."""
-        self.client.post("/login", data={
-            "username": "learner",
-            "password": "password123"
+        self.client.post("/register", data={
+            "username": "learner2",
+            "email": "learner2@nexus.org",
+            "password": "password123",
+            "track": "Web & Python Full-Stack"
         }, follow_redirects=True)
 
         api_res = self.client.get("/api/current-user")
