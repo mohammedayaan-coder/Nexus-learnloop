@@ -10,6 +10,11 @@ from services.streak_service import calculate_streak
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 DEFAULT_DATABASE_PATH = Path(__file__).resolve().parent.parent / "instance" / "nexus.db"
+SCHEMA_VERSION = 1
+
+
+class DatabaseMigrationError(RuntimeError):
+    """Raised when an existing database cannot be upgraded without data loss."""
 
 
 def connect(database_path=None):
@@ -23,15 +28,59 @@ def connect(database_path=None):
 
 
 def init_db(database_path=None):
-    """Create the application tables and indexes if they do not exist."""
+    """Initialize schema and apply safe, versioned migrations in place.
+
+    Version 1 adds case-insensitive unique indexes for usernames and emails.
+    Existing collisions are reported without changing or deleting user rows.
+    """
     with closing(connect(database_path)) as connection:
         connection.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
-        # Safe migration for existing databases to add is_demo
+        connection.execute("BEGIN IMMEDIATE")
         try:
-            connection.execute("ALTER TABLE users ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0")
-        except sqlite3.OperationalError:
-            pass  # Column already exists
-        connection.commit()
+            version = connection.execute("PRAGMA user_version").fetchone()[0]
+            if version > SCHEMA_VERSION:
+                raise DatabaseMigrationError(
+                    f"Database schema version {version} is newer than this application supports "
+                    f"(maximum {SCHEMA_VERSION})."
+                )
+            if version < 1:
+                user_columns = {
+                    row["name"] for row in connection.execute("PRAGMA table_info(users)").fetchall()
+                }
+                if "is_demo" not in user_columns:
+                    connection.execute(
+                        "ALTER TABLE users ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0"
+                    )
+
+                username_collisions = connection.execute(
+                    "SELECT COUNT(*) FROM (SELECT 1 FROM users "
+                    "GROUP BY username COLLATE NOCASE HAVING COUNT(*) > 1)"
+                ).fetchone()[0]
+                email_collisions = connection.execute(
+                    "SELECT COUNT(*) FROM (SELECT 1 FROM users "
+                    "GROUP BY email COLLATE NOCASE HAVING COUNT(*) > 1)"
+                ).fetchone()[0]
+                if username_collisions or email_collisions:
+                    raise DatabaseMigrationError(
+                        "Database migration 1 cannot enforce case-insensitive account uniqueness: "
+                        f"found {username_collisions} username and {email_collisions} email collision groups. "
+                        "Resolve those duplicate identities manually, preserving the associated user data, "
+                        "then restart the application."
+                    )
+
+                connection.execute(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_users_username_nocase "
+                    "ON users (username COLLATE NOCASE)"
+                )
+                connection.execute(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_users_email_nocase "
+                    "ON users (email COLLATE NOCASE)"
+                )
+                connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
 
 
 def create_user(username, email, password_hash, learning_goals="", is_demo=0, database_path=None):

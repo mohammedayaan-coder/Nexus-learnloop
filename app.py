@@ -9,6 +9,7 @@ from flask import Flask, session
 import database.database as db
 from services.security import (
     get_secret_key,
+    get_runtime_environment,
     generate_csrf_token,
     configure_safe_cors,
 )
@@ -87,8 +88,8 @@ def get_current_user():
                     user_rank = idx
                     break
             return AuthenticatedUser(user_row, stats, user_rank)
-        # Clear stale or deleted user session
-        session.pop("user_id", None)
+        # Clear stale or deleted user session state completely.
+        session.clear()
     return AnonymousUser()
 
 
@@ -98,19 +99,22 @@ def create_app():
     app.secret_key = get_secret_key()
 
     # Session cookie hardening
+    environment = get_runtime_environment()
     app.config.update(
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=os.getenv("FLASK_ENV", "").lower() == "production",
+        SESSION_COOKIE_SECURE=environment == "production",
     )
 
-    # Initialize SQLite database schema and demo seed peers
+    # Fail startup explicitly when SQLite cannot be initialized. Never seed
+    # benchmark accounts or sample activity into a production database.
     with app.app_context():
         try:
             db.init_db()
-            db.seed_defaults_if_empty()
         except Exception as e:
-            print(f"[Database Initialization Warning]: {e}")
+            raise RuntimeError("Database initialization failed; application startup stopped.") from e
+        if environment in {"development", "dev", "test", "testing"}:
+            db.seed_defaults_if_empty()
 
     # Secure CORS handler (avoids wildcard '*' with credentials)
     @app.after_request

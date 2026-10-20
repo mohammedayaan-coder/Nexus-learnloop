@@ -101,12 +101,13 @@
         <p class="text-xs text-on-surface-variant mt-1">Start your learning loop in under 30 seconds.</p>
       </div>
 
-      <div id="register-alert" class="hidden p-3 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-700 border border-rose-200" role="alert">
+      {% if error %}<div id="register-alert" class="p-3 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-700 border border-rose-200" role="alert">
         <span class="material-symbols-outlined text-[16px]">error</span>
-        <span id="register-alert-msg"></span>
-      </div>
+        <span id="register-alert-msg">{{ error }}</span>
+      </div>{% endif %}
 
-      <form id="register-form" action="dashboard.html" method="post" class="space-y-4">
+      <form id="register-form" action="/register" method="post" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div>
           <label for="username" class="block text-xs font-bold text-on-surface mb-1">Username</label>
           <div class="relative">

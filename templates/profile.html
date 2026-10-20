@@ -65,6 +65,7 @@
     <a href="timer.html" class="text-on-surface-variant font-medium hover:text-primary transition-colors text-xs">Study Timer</a>
   </nav>
     <form action="/logout" method="post" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <button type="submit" class="px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
         <span class="material-symbols-outlined text-[16px]">logout</span>Sign Out
       </button>
@@ -137,7 +138,8 @@
       <span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold">SQLite Persisted</span>
     </div>
 
-    <form action="profile.html" method="post" class="space-y-4">
+    <form action="/profile" method="post" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label for="learning_goals" class="block text-xs font-bold text-on-surface mb-1">Primary Learning Goal / Track</label>

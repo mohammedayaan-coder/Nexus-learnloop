@@ -95,17 +95,19 @@
         <p class="text-xs text-on-surface-variant mt-1">Enter your credentials to continue your learning sprint.</p>
       </div>
 
-      <div id="login-alert" class="hidden p-3 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-700 border border-rose-200" role="alert">
+      {% if error %}<div id="login-alert" class="p-3 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-700 border border-rose-200" role="alert">
         <span class="material-symbols-outlined text-[16px]">error</span>
-        <span id="login-alert-msg"></span>
-      </div>
+        <span id="login-alert-msg">{{ error }}</span>
+      </div>{% endif %}
 
-      <form id="login-form" action="dashboard.html" method="post" class="space-y-4">
+      <form id="login-form" action="/login" method="post" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="next" value="{{ next_url or '' }}"/>
         <div>
           <label for="username" class="block text-xs font-bold text-on-surface mb-1">Username or Email</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">person</span>
-            <input id="username" name="username" type="text" required class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="learner@nexus.org" value="learner"/>
+            <input id="username" name="username" type="text" required class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="learner@nexus.org" autocomplete="username"/>
           </div>
         </div>
 
@@ -113,7 +115,7 @@
           <label for="password" class="block text-xs font-bold text-on-surface mb-1">Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">lock</span>
-            <input id="password" name="password" type="password" required class="w-full pl-9 pr-10 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="••••••••" value="password123"/>
+            <input id="password" name="password" type="password" required class="w-full pl-9 pr-10 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Password" autocomplete="current-password"/>
             <button type="button" class="toggle-password absolute right-3 top-2.5 text-outline hover:text-on-surface transition-colors">
               <span class="material-symbols-outlined text-[18px]">visibility</span>
             </button>

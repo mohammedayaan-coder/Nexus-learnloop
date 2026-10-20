@@ -7,7 +7,14 @@ and route authentication boundaries.
 import os
 import secrets
 from functools import wraps
-from flask import session, request, redirect, url_for, flash, jsonify, abort, current_app
+from flask import session, request, redirect, url_for, flash, jsonify, current_app
+
+import database.database as db
+
+
+def get_runtime_environment():
+    """Return the configured deployment environment, defaulting to development."""
+    return (os.getenv("FLASK_ENV") or os.getenv("APP_ENV") or os.getenv("ENV") or "development").strip().lower()
 
 
 def get_secret_key():
@@ -15,14 +22,15 @@ def get_secret_key():
     Retrieve SECRET_KEY from environment.
     Enforces a strict secret in production, with a secure random key for development.
     """
-    env = os.getenv("FLASK_ENV", os.getenv("ENV", "development")).lower()
+    env = get_runtime_environment()
     secret = os.getenv("SECRET_KEY", "").strip()
 
     if env == "production":
-        if not secret or secret == "nexus-learn-loop-dev-secret-key-2026":
+        if (len(secret) < 32 or len(set(secret)) < 16
+                or secret == "nexus-learn-loop-dev-secret-key-2026"):
             raise RuntimeError(
-                "CRITICAL SECURITY CONFIGURATION: A strong SECRET_KEY environment variable "
-                "must be explicitly set when running in production mode."
+                "Production requires a high-entropy SECRET_KEY environment variable. "
+                "Generate one with Python's secrets.token_urlsafe(32)."
             )
         return secret
 
@@ -80,7 +88,8 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         user_id = session.get("user_id")
-        if not user_id:
+        if not user_id or not db.get_user(user_id):
+            session.clear()
             if request.is_json or request.path.startswith("/api/"):
                 return jsonify({
                     "success": False,
