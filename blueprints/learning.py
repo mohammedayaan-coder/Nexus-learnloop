@@ -1,5 +1,7 @@
 """Quiz, focus timer, curated resources, and study room routes."""
 
+import secrets
+
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 import database.database as db
@@ -30,35 +32,32 @@ def quiz():
             request.form.get("quiz_id", "jinja2-interpolation"),
             request.form.get("selected_option", "").strip().upper(),
         )
-        result_id = db.record_quiz_result(
-            user_id, result["quiz_name"], result["score"],
-            result["total_questions"], result["xp_earned"],
-        )
+        submission_id = request.form.get("submission_id", "")
+        try:
+            result_id, created = db.record_quiz_submission(
+                user_id, result["quiz_name"], result["score"],
+                result["total_questions"], result["xp_earned"], submission_id,
+            )
+        except ValueError as error:
+            return str(error), 400
         session["last_quiz_result_id"] = result_id
-        flash(f"Challenge recorded. +{result['xp_earned']} XP awarded.", "success")
+        if created:
+            flash(f"Challenge recorded. +{result['xp_earned']} XP awarded.", "success")
+        else:
+            flash("This quiz submission was already recorded.", "info")
         return redirect(url_for("learning.result", id=result_id))
-    return render_template("quiz.html", quiz_data=get_quiz("jinja2-interpolation"))
+    return render_template(
+        "quiz.html", quiz_data=get_quiz("jinja2-interpolation"),
+        submission_id=secrets.token_urlsafe(32),
+    )
 
 
-@learning_bp.route("/result", methods=["GET", "POST"])
-@learning_bp.route("/result.html", methods=["GET", "POST"])
+@learning_bp.route("/result", methods=["GET"])
+@learning_bp.route("/result.html", methods=["GET"])
 @require_csrf
 def result():
     user_id = _active_user_id()
     result_id = request.args.get("id") or session.get("last_quiz_result_id")
-    if request.method == "POST":
-        if not user_id:
-            flash("Please sign in to track and record quiz results.", "info")
-            return redirect(url_for("auth.login", next=url_for("learning.quiz")))
-        evaluated = evaluate_quiz_submission(
-            request.form.get("quiz_id", "jinja2-interpolation"),
-            request.form.get("selected_option", "").strip().upper(),
-        )
-        result_id = db.record_quiz_result(
-            user_id, evaluated["quiz_name"], evaluated["score"],
-            evaluated["total_questions"], evaluated["xp_earned"],
-        )
-        session["last_quiz_result_id"] = result_id
     quiz_result = db.get_quiz_result(user_id, result_id) if user_id and result_id else None
     stats = db.get_user_stats(user_id) if user_id else {}
     return render_template("result.html", quiz_result=quiz_result, stats=stats)
@@ -78,10 +77,22 @@ def timer():
         except ValueError as error:
             flash(str(error), "error")
             return redirect(url_for("learning.timer"))
-        db.record_study_session(user_id, minutes, xp_earned=xp)
+        try:
+            _session_id, created = db.record_study_session_submission(
+                user_id, minutes, xp_earned=xp,
+                submission_key=request.form.get("submission_id", ""),
+            )
+        except ValueError as error:
+            return str(error), 400
+        if not created:
+            flash("This study session was already recorded.", "info")
+            return redirect(url_for("dashboard.dashboard"))
         flash(f"Study sprint ({minutes} min) recorded. +{xp} XP awarded.", "success")
         return redirect(url_for("dashboard.dashboard"))
-    return render_template("timer.html", stats=db.get_user_stats(user_id) if user_id else {})
+    return render_template(
+        "timer.html", stats=db.get_user_stats(user_id) if user_id else {},
+        submission_id=secrets.token_urlsafe(32),
+    )
 
 
 @learning_bp.route("/resources")

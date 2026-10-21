@@ -68,12 +68,12 @@
     <!-- Streak Chip -->
     <a href="quiz.html" title="Daily Streak" class="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full border border-rose-200 hover:bg-rose-100 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-rose-500" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
-      <span class="text-xs font-bold font-label-bold" data-stat="streak">7d Streak</span>
+      <span class="text-xs font-bold font-label-bold" data-stat="streak">{{ stats.streak }}d Streak</span>
     </a>
     <!-- XP Chip -->
     <a href="leaderboard.html" title="Total XP" class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200 hover:bg-amber-100 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings:'FILL' 1;">diamond</span>
-      <span class="font-label-code text-xs font-bold" data-stat="xp">1,420 XP</span>
+      <span class="font-label-code text-xs font-bold" data-stat="xp">{{ "{:,.0f}".format(stats.xp) }} XP</span>
     </a>
     <!-- Profile Avatar -->
     <a href="profile.html" title="View Profile" data-stat="avatar" class="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary-fixed text-primary font-bold text-sm flex items-center justify-center hover:ring-primary transition-all">
@@ -92,7 +92,7 @@
         <h1 class="text-headline-md font-bold text-on-surface">Welcome back, <span data-stat="username">Learner</span>! 👋</h1>
         <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold">Streak Active</span>
       </div>
-      <p class="text-sm text-on-surface-variant">Complete your daily challenge to keep your <span data-stat="streak-val">7</span>-day streak alive and earn +20 XP.</p>
+      <p class="text-sm text-on-surface-variant">Complete your daily challenge to keep your <span data-stat="streak-val">{{ stats.streak }}</span>-day streak alive and earn +20 XP.</p>
     </div>
     <div class="flex items-center gap-2.5 flex-wrap">
       <a href="quiz.html" class="tactile-primary px-5 py-2.5 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm">
@@ -118,8 +118,8 @@
         <span class="material-symbols-outlined text-amber-500 text-[20px]">diamond</span>
       </div>
       <div class="mt-2">
-        <div class="text-headline-md font-bold text-on-surface" data-stat="xp-val">1,420</div>
-        <div class="text-[11px] text-secondary font-semibold mt-0.5">Rank #<span data-stat="rank">4</span> Global &bull; Diamond League</div>
+        <div class="text-headline-md font-bold text-on-surface" data-stat="xp-val">{{ "{:,.0f}".format(stats.xp) }}</div>
+        <div class="text-[11px] text-secondary font-semibold mt-0.5">Rank #<span data-stat="rank">{{ stats.rank }}</span> Global</div>
       </div>
     </a>
 
@@ -129,7 +129,7 @@
         <span class="material-symbols-outlined text-rose-500 text-[20px]" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
       </div>
       <div class="mt-2">
-        <div class="text-headline-md font-bold text-on-surface"><span data-stat="streak-val">7</span> Days</div>
+        <div class="text-headline-md font-bold text-on-surface"><span data-stat="streak-val">{{ stats.streak }}</span> Days</div>
         <div class="text-[11px] text-rose-600 font-semibold mt-0.5">Freeze protection active</div>
       </div>
     </a>
@@ -140,8 +140,8 @@
         <span class="material-symbols-outlined text-emerald-600 text-[20px]">schedule</span>
       </div>
       <div class="mt-2">
-        <div class="text-headline-md font-bold text-on-surface"><span data-stat="study-hours">14.5</span> hrs</div>
-        <div class="text-[11px] text-on-surface-variant font-medium mt-0.5"><span data-stat="sessions-today">3</span> sprints completed today</div>
+        <div class="text-headline-md font-bold text-on-surface"><span data-stat="study-hours">{{ stats.study_hours }}</span> hrs</div>
+        <div class="text-[11px] text-on-surface-variant font-medium mt-0.5"><span data-stat="sessions-today">{{ stats.sessions_today }}</span> sprints completed today</div>
       </div>
     </a>
 
@@ -151,8 +151,8 @@
         <span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
       </div>
       <div class="mt-2">
-        <div class="text-headline-md font-bold text-on-surface"><span data-stat="quizzes-solved">32</span> / <span data-stat="questions-answered">40</span></div>
-        <div class="text-[11px] text-primary font-semibold mt-0.5"><span data-stat="accuracy">80</span>% accuracy score</div>
+        <div class="text-headline-md font-bold text-on-surface"><span data-stat="quizzes-solved">{{ stats.quizzes_solved }}</span> / <span data-stat="questions-answered">{{ stats.questions_answered }}</span></div>
+        <div class="text-[11px] text-primary font-semibold mt-0.5"><span data-stat="accuracy">{{ stats.accuracy }}</span>% accuracy score</div>
       </div>
     </a>
   </div>
@@ -198,7 +198,7 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-base font-bold text-on-surface">Learning Activity Heatmap</h2>
-            <p class="text-xs text-on-surface-variant">148 contributions in the last 12 months</p>
+            <p class="text-xs text-on-surface-variant">{{ activity_counts|sum }} contributions in the last 210 days</p>
           </div>
           <a href="profile.html" class="text-xs text-primary font-bold hover:underline">Full Showcase →</a>
         </div>
@@ -273,54 +273,20 @@
             <span class="material-symbols-outlined text-amber-500 text-[20px]">military_tech</span>
             <span>Top Learners</span>
           </h2>
-          <a href="leaderboard.html" class="text-xs text-primary font-bold hover:underline">View All →</a>
+          <a href="leaderboard.html" class="text-xs text-primary font-bold hover:underline">View All</a>
         </div>
-
         <div class="space-y-2.5">
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/60 border border-amber-200">
+          {% for learner in leaderboard %}
+          <div class="flex items-center justify-between p-2.5 rounded-xl {% if learner.id == user_id %}bg-primary-fixed border border-primary/30{% else %}bg-surface-container-low border border-outline-variant{% endif %}">
             <div class="flex items-center gap-2.5">
-              <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-bold text-xs flex items-center justify-center">1</span>
-              <div>
-                <div class="text-xs font-bold text-on-surface">Elena Rostova</div>
-                <div class="text-[10px] text-on-surface-variant">🔥 14d streak</div>
-              </div>
+              <span class="w-6 h-6 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center">{{ loop.index }}</span>
+              <div class="text-xs font-bold text-on-surface">{% if learner.id == user_id %}You ({{ learner.username }}){% else %}{{ learner.username }}{% endif %}</div>
             </div>
-            <span class="font-label-code text-xs font-bold text-amber-800">2,840 XP</span>
+            <span class="font-label-code text-xs font-bold text-on-surface">{{ "{:,.0f}".format(learner.xp) }} XP</span>
           </div>
-
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-outline-variant">
-            <div class="flex items-center gap-2.5">
-              <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-800 font-bold text-xs flex items-center justify-center">2</span>
-              <div>
-                <div class="text-xs font-bold text-on-surface">Marcus Chen</div>
-                <div class="text-[10px] text-on-surface-variant">🔥 11d streak</div>
-              </div>
-            </div>
-            <span class="font-label-code text-xs font-bold text-on-surface">2,610 XP</span>
-          </div>
-
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-outline-variant">
-            <div class="flex items-center gap-2.5">
-              <span class="w-6 h-6 rounded-full bg-amber-700 text-white font-bold text-xs flex items-center justify-center">3</span>
-              <div>
-                <div class="text-xs font-bold text-on-surface">Amina Diop</div>
-                <div class="text-[10px] text-on-surface-variant">🔥 9d streak</div>
-              </div>
-            </div>
-            <span class="font-label-code text-xs font-bold text-on-surface">2,490 XP</span>
-          </div>
-
-          <!-- Current User Ranking -->
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-primary-fixed border border-primary/30 mt-3">
-            <div class="flex items-center gap-2.5">
-              <span class="w-6 h-6 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center">4</span>
-              <div>
-                <div class="text-xs font-bold text-on-primary-fixed">You (Learner)</div>
-                <div class="text-[10px] text-primary">🔥 7d streak &bull; Diamond</div>
-              </div>
-            </div>
-            <span class="font-label-code text-xs font-bold text-on-primary-fixed">1,420 XP</span>
-          </div>
+          {% else %}
+          <p class="text-xs text-on-surface-variant">No learners to rank yet.</p>
+          {% endfor %}
         </div>
       </div>
 

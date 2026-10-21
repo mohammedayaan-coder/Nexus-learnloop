@@ -92,35 +92,39 @@
 
     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-bold text-xs mb-3">
       <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1;">check_circle</span>
-      <span>Challenge Complete!</span>
+      <span>{% if quiz_result %}Challenge Complete{% else %}Result unavailable{% endif %}</span>
     </div>
 
-    <h1 class="text-headline-lg font-bold text-on-surface tracking-tight mb-2">Great Work, Learner!</h1>
+    <h1 class="text-headline-lg font-bold text-on-surface tracking-tight mb-2">
+      {% if quiz_result %}Quiz Complete{% else %}No quiz result found{% endif %}
+    </h1>
     <p class="text-sm text-on-surface-variant max-w-md mx-auto mb-6">
-      You correctly solved today's Python challenge and protected your daily streak.
+      {% if quiz_result %}Your saved result and current learner statistics are shown below.{% else %}Submit a quiz while signed in to see its saved result here.{% endif %}
     </p>
 
     <!-- Stat Highlights -->
+    {% if quiz_result %}
     <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-6">
       <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-        <div class="text-headline-sm font-bold text-amber-800">+20 XP</div>
-        <div class="text-[11px] text-amber-700 font-medium mt-0.5">Reward Earned</div>
+        <div class="text-headline-sm font-bold text-amber-800">{{ stats.xp|default(0) }} XP</div>
+        <div class="text-[11px] text-amber-700 font-medium mt-0.5">Total XP</div>
       </div>
       <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200">
-        <div class="text-headline-sm font-bold text-rose-600">8 Days 🔥</div>
-        <div class="text-[11px] text-rose-700 font-medium mt-0.5">Streak Extended</div>
+        <div class="text-headline-sm font-bold text-rose-600">{{ stats.streak|default(0) }} Days</div>
+        <div class="text-[11px] text-rose-700 font-medium mt-0.5">Current Streak</div>
       </div>
       <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-        <div class="text-headline-sm font-bold text-secondary">100%</div>
-        <div class="text-[11px] text-secondary font-medium mt-0.5">Accuracy</div>
+        <div class="text-headline-sm font-bold text-secondary">{{ ((quiz_result.score * 100 / quiz_result.total_questions)|round)|int if quiz_result and quiz_result.total_questions else 0 }}%</div>
+        <div class="text-[11px] text-secondary font-medium mt-0.5">This Quiz Accuracy</div>
       </div>
     </div>
+    {% endif %}
 
     <!-- Review Section -->
     <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-left max-w-lg mx-auto mb-6">
       <div class="text-xs font-bold text-on-surface mb-1">Answer Summary:</div>
       <div class="text-xs text-on-surface-variant">
-        Target expression: <code class="font-label-code text-primary font-bold">&#123;&#123; user_xp &#125;&#125;</code> (Option B). Jinja2 evaluates double curly braces as expressions and automatically escapes HTML output.
+        {% if quiz_result %}Saved result for <strong>{{ quiz_result.quiz_name }}</strong>: {{ quiz_result.score }} / {{ quiz_result.total_questions }} correct.{% else %}No saved quiz result is available for this page.{% endif %}
       </div>
     </div>
 

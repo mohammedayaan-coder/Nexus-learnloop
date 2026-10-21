@@ -5,13 +5,15 @@ Runs natively via Python's built-in unittest module.
 
 import unittest
 import os
+import re
 import secrets
 import tempfile
+from contextlib import closing
 from pathlib import Path
 from unittest import mock
 from app import create_app
 import database.database as db
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from services.security import get_secret_key
 
 
@@ -32,6 +34,20 @@ class AuthAndBoundariesTestCase(unittest.TestCase):
     def tearDown(self):
         db.DEFAULT_DATABASE_PATH = self.original_default
         self.temp_dir.cleanup()
+
+    def next_quiz_submission_id(self):
+        response = self.client.get("/quiz")
+        self.assertEqual(response.status_code, 200)
+        match = re.search(rb'name="submission_id" value="([^"]+)"', response.data)
+        self.assertIsNotNone(match)
+        return match.group(1).decode("ascii")
+
+    def next_study_submission_id(self):
+        response = self.client.get("/timer")
+        self.assertEqual(response.status_code, 200)
+        match = re.search(rb'name="submission_id" value="([^"]+)"', response.data)
+        self.assertIsNotNone(match)
+        return match.group(1).decode("ascii")
 
     def test_guest_cannot_access_dashboard(self):
         """Guest visitors must not silently login as demo learner; should be redirected."""
@@ -165,6 +181,106 @@ class AuthAndBoundariesTestCase(unittest.TestCase):
             create_app()
         seed.assert_not_called()
 
+    def test_production_leaderboard_excludes_demo_and_unearned_accounts(self):
+        strong_hash = generate_password_hash("securepass123")
+        first_id = db.create_user("real-first", "first@example.test", strong_hash)
+        second_id = db.create_user("real-second", "second@example.test", strong_hash)
+        empty_id = db.create_user("real-empty", "empty@example.test", strong_hash)
+        db.record_learning_activity(first_id, "quiz", 80)
+        db.record_learning_activity(second_id, "quiz", 120)
+
+        production_secret = secrets.token_urlsafe(32)
+        with mock.patch.dict(os.environ, {"FLASK_ENV": "production", "SECRET_KEY": production_secret}), \
+                mock.patch.object(db, "init_db"):
+            production_app = create_app()
+        production_app.config["TESTING"] = True
+        client = production_app.test_client()
+
+        api_rows = client.get("/api/leaderboard").get_json()["rankings"]
+        self.assertEqual([row["id"] for row in api_rows], [second_id, first_id])
+        self.assertEqual([row["xp"] for row in api_rows], [120, 80])
+        self.assertNotIn(empty_id, [row["id"] for row in api_rows])
+        self.assertFalse(any(row["is_demo"] for row in api_rows))
+
+        demo_id = db.get_user_by_login("learner")["id"]
+        with client.session_transaction() as current_session:
+            current_session["user_id"] = demo_id
+        self.assertFalse(client.get("/api/current-user").get_json()["is_authenticated"])
+
+        with client.session_transaction() as current_session:
+            current_session["user_id"] = first_id
+        current_user = client.get("/api/current-user").get_json()
+        self.assertEqual(current_user["stats"]["rank"], 2)
+        with client.session_transaction() as current_session:
+            current_session["user_id"] = empty_id
+        self.assertEqual(client.get("/api/current-user").get_json()["stats"]["rank"], "-")
+        with client.session_transaction() as current_session:
+            current_session["user_id"] = first_id
+        dashboard_response = client.get("/dashboard")
+        self.assertEqual(dashboard_response.status_code, 200)
+        self.assertIn(b"real-second", dashboard_response.data)
+        leaderboard_response = client.get("/leaderboard")
+        self.assertEqual(leaderboard_response.status_code, 200)
+        self.assertIn(b"real-second", leaderboard_response.data)
+        self.assertIn(b">80 XP<", leaderboard_response.data)
+        self.assertNotIn(b">120 XP<", leaderboard_response.data.split(b"Community Leaderboard", 1)[0])
+        for sample_name in (b"Elena Rostova", b"Marcus Chen", b"Amina Diop"):
+            self.assertNotIn(sample_name, leaderboard_response.data)
+
+        with mock.patch.dict(os.environ, {
+            "FLASK_ENV": "testing", "SECRET_KEY": secrets.token_urlsafe(32),
+        }), mock.patch.object(db, "init_db"), \
+                mock.patch.object(db, "seed_defaults_if_empty"):
+            development_app = create_app()
+        development_app.config["TESTING"] = True
+        development_page = development_app.test_client().get("/leaderboard")
+        for sample_name in (b"Elena Rostova", b"Marcus Chen", b"Amina Diop"):
+            self.assertIn(sample_name, development_page.data)
+
+    def test_legacy_provenance_approval_is_audited_and_preserves_history(self):
+        legacy_id = db.create_user(
+            "legacy-approved", "legacy-approved@example.test",
+            generate_password_hash("securepass123"),
+        )
+        db.record_learning_activity(legacy_id, "quiz", 75)
+        db.record_quiz_result(legacy_id, "Existing attempt", 2, 3, 20)
+        with closing(db.connect()) as connection:
+            connection.execute(
+                "DELETE FROM learner_account_provenance WHERE user_id = ?", (legacy_id,)
+            )
+            connection.commit()
+        before = db.get_user_stats(legacy_id)
+
+        # A reviewer must explicitly classify the legacy account with an evidence reference.
+        with self.assertRaises(ValueError):
+            db.review_account_provenance(legacy_id, "registered", "operator-1", "")
+        db.review_account_provenance(
+            legacy_id, "registered", "operator-1", "registration ticket REG-1042",
+        )
+        after = db.get_user_stats(legacy_id)
+        self.assertEqual(after["xp"], before["xp"])
+        self.assertEqual(after["quizzes_solved"], before["quizzes_solved"])
+        with closing(db.connect()) as connection:
+            audit = connection.execute(
+                "SELECT previous_kind, account_kind, reviewed_by, evidence "
+                "FROM learner_provenance_reviews WHERE user_id = ?", (legacy_id,),
+            ).fetchone()
+            self.assertEqual(tuple(audit), (None, "registered", "operator-1", "registration ticket REG-1042"))
+
+        self.app.config["RUNTIME_ENVIRONMENT"] = "production"
+        with self.client.session_transaction() as current_session:
+            current_session["user_id"] = legacy_id
+        rankings = self.client.get("/api/leaderboard").get_json()["rankings"]
+        approved = next(row for row in rankings if row["id"] == legacy_id)
+        current = self.client.get("/api/current-user").get_json()
+        self.assertEqual(approved["xp"], 95)
+        self.assertEqual(current["stats"]["xp"], approved["xp"])
+        self.assertEqual(current["stats"]["rank"], next(
+            rank for rank, row in enumerate(rankings, 1) if row["id"] == legacy_id
+        ))
+        page = self.client.get("/leaderboard")
+        self.assertIn(b"95 XP", page.data)
+
     def test_test_environment_seeds_demo_data(self):
         environment = {"FLASK_ENV": "testing", "SECRET_KEY": secrets.token_urlsafe(32)}
         with mock.patch.dict(os.environ, environment), \
@@ -202,20 +318,139 @@ class AuthAndBoundariesTestCase(unittest.TestCase):
         self.assertEqual(db.get_user(user_id)["bio"], "Testing profile persistence")
 
         before_quizzes = db.get_user_stats(user_id)["quizzes_solved"]
-        quiz_response = self.client.post("/quiz", data={"quiz_id": "jinja2-interpolation", "selected_option": "B"})
+        quiz_response = self.client.post("/quiz", data={
+            "quiz_id": "jinja2-interpolation", "selected_option": "B",
+            "submission_id": self.next_quiz_submission_id(),
+        })
         self.assertEqual(quiz_response.status_code, 302)
         self.assertEqual(db.get_user_stats(user_id)["quizzes_solved"], before_quizzes + 1)
 
         before_minutes = db.get_user_stats(user_id)["study_minutes"]
-        timer_response = self.client.post("/timer", data={"duration_minutes": "25"})
+        timer_response = self.client.post("/timer", data={
+            "duration_minutes": "25", "submission_id": self.next_study_submission_id(),
+        })
         self.assertEqual(timer_response.status_code, 302)
         self.assertEqual(db.get_user_stats(user_id)["study_minutes"], before_minutes + 25)
 
+    def test_quiz_result_and_dashboard_show_persisted_stats_and_refresh_is_read_only(self):
+        self.client.post("/login", data={"username": "learner", "password": "password123"})
+        user_id = db.get_user_by_login("learner")["id"]
+        before = db.get_user_stats(user_id)
+
+        submitted = self.client.post("/quiz", data={
+            "quiz_id": "jinja2-interpolation", "selected_option": "B",
+            "submission_id": self.next_quiz_submission_id(),
+        })
+        self.assertEqual(submitted.status_code, 302)
+        result_url = submitted.headers["Location"]
+        after_submission = db.get_user_stats(user_id)
+        self.assertEqual(after_submission["quizzes_solved"], before["quizzes_solved"] + 1)
+        self.assertEqual(after_submission["xp"], before["xp"] + 20)
+
+        result_page = self.client.get(result_url)
+        self.assertEqual(result_page.status_code, 200)
+        self.assertIn(f">{after_submission['streak']} Days<".encode(), result_page.data)
+        self.assertIn(f">{after_submission['xp']} XP<".encode(), result_page.data)
+        self.assertIn(b">100%<", result_page.data)
+        self.assertNotIn(b"8 Days", result_page.data)
+
+        dashboard_page = self.client.get("/dashboard")
+        self.assertEqual(dashboard_page.status_code, 200)
+        self.assertIn(f'data-stat="streak-val">{after_submission["streak"]}'.encode(), dashboard_page.data)
+        formatted_xp = f'{after_submission["xp"]:,}'
+        self.assertIn(f'data-stat="xp-val">{formatted_xp}'.encode(), dashboard_page.data)
+
+        # The quiz route uses POST/Redirect/GET; refreshing the result GET adds no result or XP.
+        self.client.get(result_url)
+        after_refresh = db.get_user_stats(user_id)
+        self.assertEqual(after_refresh["quizzes_solved"], after_submission["quizzes_solved"])
+        self.assertEqual(after_refresh["xp"], after_submission["xp"])
+
+    def test_quiz_retry_is_idempotent_and_new_submission_allows_retake(self):
+        self.client.post("/login", data={"username": "learner", "password": "password123"})
+        user_id = db.get_user_by_login("learner")["id"]
+        before = db.get_user_stats(user_id)
+        submission_id = self.next_quiz_submission_id()
+        payload = {
+            "quiz_id": "jinja2-interpolation", "selected_option": "B",
+            "submission_id": submission_id,
+        }
+
+        first = self.client.post("/quiz", data=payload)
+        second = self.client.post("/quiz", data=payload)
+
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(first.headers["Location"], second.headers["Location"])
+        after = db.get_user_stats(user_id)
+        self.assertEqual(after["quizzes_solved"], before["quizzes_solved"] + 1)
+        self.assertEqual(after["xp"], before["xp"] + 20)
+
+        retake = self.client.post("/quiz", data={
+            "quiz_id": "jinja2-interpolation", "selected_option": "B",
+            "submission_id": self.next_quiz_submission_id(),
+        })
+        self.assertEqual(retake.status_code, 302)
+        after_retake = db.get_user_stats(user_id)
+        self.assertEqual(after_retake["quizzes_solved"], before["quizzes_solved"] + 2)
+        self.assertEqual(after_retake["xp"], before["xp"] + 40)
+
     def test_authenticated_activity_api_records_session(self):
         self.client.post("/login", data={"username": "learner", "password": "password123"})
-        response = self.client.post("/api/record-study-session", json={"duration_minutes": 25})
+        response = self.client.post("/api/record-study-session", json={
+            "duration_minutes": 25, "submission_id": "study-api-attempt-1",
+        })
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.get_json()["success"])
+
+    def test_study_session_retry_awards_xp_once_and_ignores_submitted_xp(self):
+        self.client.post("/login", data={"username": "learner", "password": "password123"})
+        user_id = db.get_user_by_login("learner")["id"]
+        before = db.get_user_stats(user_id)
+        submission_id = self.next_study_submission_id()
+        payload = {"duration_minutes": "25", "submission_id": submission_id,
+                   "xp_earned": "999999"}
+
+        first = self.client.post("/timer", data=payload)
+        second = self.client.post("/timer", data=payload)
+
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        after = db.get_user_stats(user_id)
+        self.assertEqual(after["xp"], before["xp"] + 30)
+        self.assertEqual(after["study_minutes"], before["study_minutes"] + 25)
+
+    def test_zero_xp_header_and_logged_in_header_use_own_persisted_xp(self):
+        fresh_id = db.create_user("zero-xp-user", "zero@example.test", generate_password_hash("securepass123"))
+        with self.client.session_transaction() as current_session:
+            current_session["user_id"] = fresh_id
+        zero_page = self.client.get("/leaderboard")
+        self.assertIn(b">0 XP<", zero_page.data)
+
+        db.record_learning_activity(fresh_id, "quiz", 35)
+        leader_id = db.create_user("higher-xp-user", "higher@example.test", generate_password_hash("securepass123"))
+        db.record_learning_activity(leader_id, "quiz", 90)
+        own_page = self.client.get("/leaderboard")
+        header = own_page.data.split(b"<!-- MAIN LEADERBOARD -->", 1)[0]
+        self.assertIn(b">35 XP<", header)
+        self.assertNotIn(b">90 XP<", header)
+
+    def test_quiz_api_requires_and_honors_submission_idempotency_key(self):
+        self.client.post("/login", data={"username": "learner", "password": "password123"})
+        user_id = db.get_user_by_login("learner")["id"]
+        before = db.get_user_stats(user_id)
+        missing_key = self.client.post("/api/record-quiz", json={"selected_option": "B"})
+        self.assertEqual(missing_key.status_code, 400)
+
+        payload = {"selected_option": "B", "submission_id": "api-attempt-1"}
+        first = self.client.post("/api/record-quiz", json=payload).get_json()
+        retry = self.client.post("/api/record-quiz", json=payload).get_json()
+        self.assertTrue(first["created"])
+        self.assertFalse(retry["created"])
+        self.assertEqual(first["result_id"], retry["result_id"])
+        after = db.get_user_stats(user_id)
+        self.assertEqual(after["quizzes_solved"], before["quizzes_solved"] + 1)
+        self.assertEqual(after["xp"], before["xp"] + 20)
 
     def test_login_invalid_credentials(self):
         """Invalid credentials fail authentication and do not grant session."""

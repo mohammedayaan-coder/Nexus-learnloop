@@ -88,7 +88,10 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         user_id = session.get("user_id")
-        if not user_id or not db.get_user(user_id):
+        user = db.get_user(user_id) if user_id else None
+        demo_blocked = (user and user["is_demo"] and
+                        current_app.config.get("RUNTIME_ENVIRONMENT") == "production")
+        if not user or demo_blocked:
             session.clear()
             if request.is_json or request.path.startswith("/api/"):
                 return jsonify({

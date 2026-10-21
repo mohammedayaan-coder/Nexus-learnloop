@@ -3,7 +3,7 @@
 import sqlite3
 from urllib.parse import urlsplit
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import database.database as db
@@ -43,7 +43,10 @@ def login():
     next_url = _safe_next(request.args.get("next") or request.form.get("next"))
 
     user = db.get_user_by_login(identity) if identity and password else None
-    if not user or not user["password_hash"] or not check_password_hash(user["password_hash"], password):
+    demo_blocked = (user and user["is_demo"] and
+                    current_app.config.get("RUNTIME_ENVIRONMENT") == "production")
+    if (not user or demo_blocked or not user["password_hash"]
+            or not check_password_hash(user["password_hash"], password)):
         message = "Invalid username/email or password."
         if _wants_json():
             return jsonify({"success": False, "error": message}), 401

@@ -5,7 +5,8 @@ Modular architecture with Flask blueprints, server-authoritative scoring, and st
 """
 
 import os
-from flask import Flask, session
+import click
+from flask import Flask, current_app, session
 import database.database as db
 from services.security import (
     get_secret_key,
@@ -13,6 +14,7 @@ from services.security import (
     generate_csrf_token,
     configure_safe_cors,
 )
+from services.leaderboard import get_ranked_learners
 
 # Load environment variables from .env if present
 try:
@@ -79,16 +81,17 @@ def get_current_user():
     user_id = session.get("user_id")
     if user_id:
         user_row = db.get_user(user_id)
-        if user_row:
+        if (user_row and not (user_row["is_demo"] and
+                              current_app.config.get("RUNTIME_ENVIRONMENT") == "production")):
             stats = db.get_user_stats(user_id)
-            leaderboard = db.get_leaderboard()
-            user_rank = 1
+            leaderboard = get_ranked_learners()
+            user_rank = "-"
             for idx, row in enumerate(leaderboard, start=1):
                 if row["id"] == user_id:
                     user_rank = idx
                     break
             return AuthenticatedUser(user_row, stats, user_rank)
-        # Clear stale or deleted user session state completely.
+        # Clear stale, deleted, or demo-only user session state completely.
         session.clear()
     return AnonymousUser()
 
@@ -101,6 +104,7 @@ def create_app():
     # Session cookie hardening
     environment = get_runtime_environment()
     app.config.update(
+        RUNTIME_ENVIRONMENT=environment,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=environment == "production",
@@ -141,6 +145,24 @@ def create_app():
     app.register_blueprint(learning_bp)
     app.register_blueprint(ai_mentor_bp)
     app.register_blueprint(api_bp)
+
+    @app.cli.command("review-learner-provenance")
+    @click.option("--user-id", type=int, required=True, help="Existing account ID to review.")
+    @click.option("--decision", type=click.Choice(["registered", "demo"]), required=True)
+    @click.option("--reviewed-by", required=True, help="Operator identifier for the audit record.")
+    @click.option("--evidence", required=True, help="Independent evidence reference; do not use display name/email alone.")
+    def review_learner_provenance(user_id, decision, reviewed_by, evidence):
+        """Approve an existing account's leaderboard provenance after manual review."""
+        try:
+            previous = db.review_account_provenance(
+                user_id, decision, reviewed_by, evidence,
+            )
+        except ValueError as error:
+            raise click.ClickException(str(error)) from error
+        click.echo(
+            f"Account {user_id} provenance set to {decision}; previous classification: "
+            f"{previous or 'unclassified'}. Review recorded."
+        )
 
     return app
 

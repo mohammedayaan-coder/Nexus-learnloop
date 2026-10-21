@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS study_sessions (
 CREATE TABLE IF NOT EXISTS quiz_results (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
+    idempotency_key TEXT,
     quiz_name TEXT NOT NULL,
     score INTEGER NOT NULL,
     total_questions INTEGER NOT NULL,

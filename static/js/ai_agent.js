@@ -1,6 +1,6 @@
 /**
  * Nexus Learn Loop — AI Mentor Client Logic
- * Supports both Flask backend (/api/ai-chat) and direct Google Gemini API calls.
+ * Uses the Flask backend for chat; browser keys remain available for explicit connection tests.
  * Built-in intelligent offline tutor with full markdown and callout rendering.
  */
 document.addEventListener("DOMContentLoaded", () => {
@@ -118,6 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
       `);
       return placeholder;
     });
+
+    // Model output is untrusted. Escape it before adding the formatter's own markup.
+    text = escapeHtml(text);
 
     // 2. Parse GitHub Alerts / Callout Boxes: > [!NOTE], > [!WARNING], > [!TIP]
     text = text.replace(/^>\s*\[!(NOTE|INFO|WARNING|TIP|CAUTION|IMPORTANT)\]\s*\n((?:>.*(?:\n|$))*)/gim, (match, type, content) => {
@@ -260,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const backendInd = document.getElementById("backend-status-indicator");
             if (backendInd) {
               backendInd.className = "font-bold flex items-center gap-1.5 text-emerald-700 text-[11px]";
-              backendInd.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Active (${escapeHtml(data.key_preview || data.key_type)})</span>`;
+              backendInd.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-500"></span><span>Key configured; response not yet verified</span>`;
             }
             updateKeyBadge();
             return;
@@ -280,74 +283,37 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   checkBackendStatus();
 
-  // Direct Google Gemini API caller (used for client-side API calling)
+  // Optional direct call for an explicitly saved browser key. Server requests remain preferred.
   async function callDirectGemini(query, topic, apiKey, modelChoice = "gemini-3.8-flash") {
-    const models = [modelChoice];
-    for (const m of ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"]) {
-      if (!models.includes(m)) models.push(m);
-    }
-
-    const systemPrompt = `You are the Nexus Learn Loop AI Mentor, a friendly, concise programming tutor inspired by Duolingo. The student is asking about: ${topic}. Provide clear explanations with brief code examples and best practices. Keep answers under 250 words.`;
-
-    // Construct multi-turn contents
-    const contents = [];
-    if (chatHistory.length > 0) {
-      chatHistory.slice(-6).forEach((turn) => {
-        contents.push({
-          role: turn.role === "user" ? "user" : "model",
-          parts: [{ text: turn.text }]
-        });
+    const systemPrompt = `You are the Nexus Learn Loop AI Mentor, a warm, concise programming tutor. Keep the selected topic (${topic}) central. If the learner only greets you, greet them naturally and ask a useful follow-up question. Use recent conversation turns when relevant.`;
+    const contents = chatHistory.slice(-12).map((turn) => ({
+      role: turn.role === "user" ? "user" : "model",
+      parts: [{ text: turn.text }]
+    }));
+    contents.push({ role: "user", parts: [{ text: `Selected topic: ${topic}\n${query}` }] });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelChoice}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig: { maxOutputTokens: 800, temperature: 0.4 }
+        }),
+        signal: controller.signal
       });
+      if (!response.ok) return { success: false, error: `Gemini returned HTTP ${response.status}.` };
+      const data = await response.json();
+      const parts = data.candidates?.[0]?.content?.parts;
+      const answer = Array.isArray(parts) ? parts.map((part) => part.text || "").join("").trim() : "";
+      return answer ? { success: true, text: answer, model: modelChoice } : { success: false, error: "Gemini returned an empty answer." };
+    } catch (error) {
+      return { success: false, error: error.name === "AbortError" ? "Gemini took too long to respond." : "Could not reach Gemini." };
+    } finally {
+      clearTimeout(timeoutId);
     }
-    contents.push({
-      role: "user",
-      parts: [{ text: `Topic: ${topic}\nQuestion: ${query}` }]
-    });
-
-    const payload = {
-      system_instruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: contents,
-      generationConfig: {
-        maxOutputTokens: 800,
-        temperature: 0.4
-      }
-    };
-
-    let lastError = null;
-
-    for (const model of models) {
-      try {
-        // Native Google Generative Language endpoint with x-goog-api-key header (clean REST without query token interference)
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const parts = data.candidates?.[0]?.content?.parts || [];
-          const text = parts.map(p => p.text || "").join("").trim();
-          if (text) return { success: true, text, model };
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          lastError = errData?.error?.message || `HTTP ${res.status}`;
-          // Immediately stop retrying if credential or permission is invalid
-          if (res.status === 400 || res.status === 401 || res.status === 403) {
-            break;
-          }
-        }
-      } catch (e) {
-        lastError = e.message;
-      }
-    }
-    return { success: false, error: lastError };
   }
 
   // --- API Configuration Modal Controls ---
@@ -483,78 +449,38 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Auto-detect models button
+  // The server's allowlist is authoritative for model choices.
   if (detectModelsBtn && modelSelect) {
     detectModelsBtn.addEventListener("click", async () => {
-      const inputVal = apiKeyInput ? apiKeyInput.value.trim() : "";
-      const currentKey = inputVal || localStorage.getItem("nexus_gemini_key") || "";
-
-      detectModelsBtn.innerHTML = `<span class="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin"></span><span>Detecting...</span>`;
-
-      let models = [];
+      detectModelsBtn.disabled = true;
+      detectModelsBtn.innerHTML = `<span class="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin"></span><span>Loading...</span>`;
       try {
-        const res = await fetch("/api/ai-models", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ apiKey: currentKey || undefined })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.models && data.models.length > 0) {
-            models = data.models;
-          }
-        }
-      } catch (e) {}
-
-      if (models.length === 0 && currentKey && isValidGeminiKey(currentKey)) {
-        try {
-          const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": currentKey
-            }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            models = (data.models || []).map(m => m.name.replace("models/", "")).filter(m => m.includes("gemini"));
-          }
-        } catch (e) {}
-      }
-
-      detectModelsBtn.innerHTML = `<span class="material-symbols-outlined text-[13px]">sync</span><span>Detect Available Models</span>`;
-
-      if (models.length > 0) {
-        if (!models.includes("gemini-3.8-flash")) {
-          models.unshift("gemini-3.8-flash");
-        }
+        const res = await fetch("/api/ai-models");
+        const data = await res.json();
+        if (!res.ok || !Array.isArray(data.models) || data.models.length === 0) throw new Error();
         modelSelect.innerHTML = "";
-        models.forEach((m) => {
-          const opt = document.createElement("option");
-          opt.value = m;
-          opt.textContent = m === "gemini-3.8-flash" ? "Gemini 3.8 Flash (Active Key Engine)" : m;
-          modelSelect.appendChild(opt);
+        data.models.forEach((model) => {
+          const option = document.createElement("option");
+          option.value = model;
+          option.textContent = model;
+          modelSelect.appendChild(option);
         });
-        const customOpt = document.createElement("option");
-        customOpt.value = "custom";
-        customOpt.textContent = "Custom Model (Type your model name)...";
-        modelSelect.appendChild(customOpt);
-
-        modelSelect.value = "gemini-3.8-flash";
-        if (activeModelDisplay) activeModelDisplay.textContent = "gemini-3.8-flash";
-
+        modelSelect.value = data.models[0];
+        if (activeModelDisplay) activeModelDisplay.textContent = data.models[0];
         if (testResultBox) {
-          testResultBox.className = "p-3 rounded-xl text-xs leading-relaxed bg-emerald-500/10 border border-emerald-500/30 text-emerald-900";
-          testResultBox.style.display = "block";
-          testResultBox.innerHTML = `✅ <strong>${models.length} Models Detected!</strong> Populated available models into dropdown.`;
-          testResultBox.classList.remove("hidden");
-        }
-      } else {
-        if (testResultBox) {
+          testResultBox.textContent = "Supported model list loaded from the server.";
           testResultBox.className = "p-3 rounded-xl text-xs leading-relaxed bg-surface-container-high text-on-surface-variant";
-          testResultBox.style.display = "block";
-          testResultBox.innerHTML = `ℹ️ Loaded default model suite. You can also select <strong>Custom Model</strong> to type any model name.`;
           testResultBox.classList.remove("hidden");
         }
+      } catch (_error) {
+        if (testResultBox) {
+          testResultBox.textContent = "Could not load the server's supported model list.";
+          testResultBox.className = "p-3 rounded-xl text-xs leading-relaxed bg-amber-500/10 border border-amber-500/30 text-amber-900";
+          testResultBox.classList.remove("hidden");
+        }
+      } finally {
+        detectModelsBtn.disabled = false;
+        detectModelsBtn.innerHTML = `<span class="material-symbols-outlined text-[13px]">sync</span><span>Detect Available Models</span>`;
       }
     });
   }
@@ -681,12 +607,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isValidGeminiKey(clientKey)) {
       badge.className = "px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold flex items-center gap-1.5 cursor-pointer hover:bg-emerald-200 transition-colors shadow-sm";
-      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span><span>Live Gemini (${escapeHtml(currentModel)})</span>`;
-      badge.title = "Live Gemini API is active! Click to configure API settings or model.";
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span><span>Client key saved (not verified)</span>`;
+      badge.title = "A browser key is saved. Gemini is only verified after a successful request.";
     } else if (hasBackendKey) {
       badge.className = "px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold flex items-center gap-1.5 cursor-pointer hover:bg-emerald-200 transition-colors shadow-sm";
-      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span><span>Backend Gemini Active</span>`;
-      badge.title = "Live Gemini API is active via .env! Click to configure API settings or model.";
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span><span>Server key configured</span>`;
+      badge.title = "A server key is configured; each message reports whether Gemini actually answered.";
     } else {
       badge.className = "px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant text-[10px] font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-surface-container-highest transition-colors shadow-sm";
       badge.innerHTML = `<span class="material-symbols-outlined text-[13px] text-primary">key</span><span>API Settings (Offline Tutor)</span>`;
@@ -696,90 +622,90 @@ document.addEventListener("DOMContentLoaded", () => {
   updateKeyBadge();
 
   // Chat message submit handler
-  chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  let sendingMessage = false;
+  chatForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (sendingMessage) return;
     const query = chatInput.value.trim();
     if (!query) return;
 
+    sendingMessage = true;
+    const sendButton = document.getElementById("send-btn");
+    chatInput.disabled = true;
+    if (sendButton) {
+      sendButton.disabled = true;
+      sendButton.dataset.originalText = sendButton.innerHTML;
+      sendButton.innerHTML = `<span class="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin"></span><span>Thinking?</span>`;
+    }
     chatInput.value = "";
     appendUserMessage(query);
     appendTypingIndicator();
 
     let replied = false;
-    let apiErrorMsg = null;
-    const chosenModel = localStorage.getItem("nexus_gemini_model") || currentModel;
+    let backendFailure = "";
+    let transportFailed = false;
+    const chosenModel = "gemini-3.8-flash";
 
-    // 1. Try local Flask backend (/api/ai-chat or port 5000)
-    const endpointsToTry = [];
-    if (window.location.protocol.startsWith("http")) {
-      endpointsToTry.push("/api/ai-chat");
-      if (window.location.port !== "5000") {
-        endpointsToTry.push("http://127.0.0.1:5000/api/ai-chat");
-      }
-    } else {
-      endpointsToTry.push("http://127.0.0.1:5000/api/ai-chat");
-    }
-
-    for (const endpoint of endpointsToTry) {
-      if (replied) break;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 32000);
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 9000);
-        const res = await fetch(endpoint, {
+        const response = await fetch("/api/ai-chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: query,
             topic: selectedTopic,
             model: chosenModel,
-            apiKey: geminiApiKey || undefined,
-            history: chatHistory.slice(-6)
+            history: chatHistory.slice(-12)
           }),
           signal: controller.signal
         });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.reply) {
-            removeTypingIndicator();
-            appendAgentMessage(data.reply);
-            replied = true;
-            chatHistory.push({ role: "user", text: query });
-            chatHistory.push({ role: "model", text: data.reply });
-          }
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.success && data.source === "gemini" && data.reply) {
+          appendAgentMessage(data.reply);
+          chatHistory.push({ role: "user", text: query });
+          chatHistory.push({ role: "model", text: data.reply });
+          replied = true;
+        } else {
+          backendFailure = data.error || "The AI Mentor could not complete this request.";
         }
-      } catch (err) {
-        // Endpoint not reachable, fall through
+      } catch (_error) {
+        transportFailed = true;
+      } finally {
+        clearTimeout(timeoutId);
       }
-    }
 
-    // 2. Direct Gemini API call if a valid key is configured in client
-    if (!replied && isValidGeminiKey(geminiApiKey)) {
-      const result = await callDirectGemini(query, selectedTopic, geminiApiKey, chosenModel);
-      if (result.success && result.text) {
-        removeTypingIndicator();
-        appendAgentMessage(result.text);
-        replied = true;
+      // Do not issue a second Gemini request after an upstream HTTP error; the
+      // server has already handled bounded retries and returned its safe status.
+      if (!replied && !backendFailure && transportFailed && isValidGeminiKey(geminiApiKey)) {
+        const result = await callDirectGemini(query, selectedTopic, geminiApiKey, chosenModel);
+        if (result.success && result.text) {
+          appendAgentMessage(result.text);
+          chatHistory.push({ role: "user", text: query });
+          chatHistory.push({ role: "model", text: result.text });
+          replied = true;
+        }
+      }
+
+      if (!replied && backendFailure) {
+        appendAgentMessage(`**Gemini unavailable:** ${backendFailure}`);
+      } else if (!replied) {
+        const response = `**Offline tutor (Gemini unavailable):**\n\n${generateLocalFallback(query, selectedTopic)}`;
+        appendAgentMessage(response);
         chatHistory.push({ role: "user", text: query });
-        chatHistory.push({ role: "model", text: result.text });
-      } else if (result.error) {
-        apiErrorMsg = result.error;
+        chatHistory.push({ role: "model", text: response });
       }
-    }
-
-    // 3. Fallback to smart offline tutor if both API paths were bypassed or failed
-    if (!replied) {
+    } finally {
       removeTypingIndicator();
-      let response = generateLocalFallback(query, selectedTopic);
-
-      // Display diagnostic notice if the user explicitly provided a key that was rejected by Google
-      if (apiErrorMsg && isValidGeminiKey(geminiApiKey)) {
-        response = `> [!WARNING]\n> Gemini Live API notice: *${escapeHtml(apiErrorMsg)}*. Showing offline response. Click **API Settings** above to update.\n\n` + response;
+      sendingMessage = false;
+      chatInput.disabled = false;
+      if (sendButton) {
+        sendButton.disabled = false;
+        sendButton.innerHTML = sendButton.dataset.originalText || `<span>Send</span><span class="material-symbols-outlined text-[16px]">send</span>`;
+        delete sendButton.dataset.originalText;
       }
-
-      appendAgentMessage(response);
-      chatHistory.push({ role: "user", text: query });
-      chatHistory.push({ role: "model", text: response });
+      chatInput.focus();
     }
   });
 
@@ -787,7 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const q = query.toLowerCase().trim();
 
     // Friendly greetings
-    if (["hi", "hello", "hey", "hola", "yo", "sup", "greetings"].includes(q) || q.startsWith("hi ") || q.startsWith("hello ") || q.startsWith("hey ")) {
+    if (/^(hi+|hello+|hey+|hola|yo|sup|greetings)[!.?,\s]*$/i.test(q)) {
       return `**Hello! 👋 Welcome to Nexus Learn Loop!**
 
 I'm your AI Mentor for **${topic}**. I'm here to help you:

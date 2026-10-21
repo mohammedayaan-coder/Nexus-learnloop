@@ -48,7 +48,7 @@
         <span>AI Mentor</span>
       </a>
       <div class="flex items-center gap-1.5 bg-[#2b2d31] px-2 py-0.5 rounded-full text-amber-400 font-mono text-[10px] font-bold">
-        <span>⚡ <span data-stat="xp-val">1,420</span> XP</span>
+        <span>⚡ <span data-stat="xp-val">{{ "{:,.0f}".format(current_user.xp) if current_user.is_authenticated else "0" }}</span> XP</span>
       </div>
     </div>
   </header>

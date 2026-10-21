@@ -105,7 +105,7 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <a href="leaderboard.html" class="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm text-center hover:border-primary/50 transition-all">
       <div class="text-xs text-on-surface-variant font-medium">Total XP</div>
-      <div class="text-headline-md font-bold text-primary mt-1" data-stat="xp-val">1,420</div>
+      <div class="text-headline-md font-bold text-primary mt-1" data-stat="xp-val">{{ "{:,.0f}".format(stats.xp) }}</div>
       <div class="text-[11px] text-secondary font-semibold">Rank #<span data-stat="rank">4</span> Global</div>
     </a>
 

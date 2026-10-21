@@ -21,3 +21,10 @@ Our Vision
 To create a community where Nexus learners learn new skills, stay consistent, collaborate 
 with peers, showcase their progress, and compete to become better every day. 
 Nexus Learn Loop — Learn together. Compete fairly. Grow endlessly.
+## Leaderboard and Quiz Submission Rules
+
+- Development and test environments may include accounts explicitly marked `is_demo = 1` so seeded fixtures remain visible.
+- Production leaderboard queries include only accounts explicitly marked `is_demo = 0` with positive XP summed from persisted `learning_activity` records. The app does not identify demo users from usernames or email addresses.
+- The quiz form creates a unique `submission_id` for each page load. Retries must reuse that ID; an intentional retake must start a new quiz page and use its new ID.
+- `POST /api/record-quiz` requires a `submission_id` string (maximum 128 characters). API clients must generate one ID per logical attempt, reuse it for every retry, and generate a fresh ID for a deliberate retake.
+- Database migration version 2 adds a nullable `quiz_results.idempotency_key` and a per-user unique index. Existing quiz rows remain unchanged and retain a null key.

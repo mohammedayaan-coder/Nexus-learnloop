@@ -3,6 +3,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 import database.database as db
+from services.leaderboard import get_ranked_learners
 from services.security import login_required, require_csrf
 
 dashboard_bp = Blueprint("dashboard", __name__)
@@ -19,11 +20,17 @@ def index():
 @login_required
 def dashboard():
     user_id = session["user_id"]
+    rankings = get_ranked_learners()
+    rank = next((position for position, learner in enumerate(rankings, 1)
+                 if learner["id"] == user_id), "-")
+    stats = db.get_user_stats(user_id)
+    stats["rank"] = rank
     return render_template(
         "dashboard.html",
-        stats=db.get_user_stats(user_id),
+        stats=stats,
         activity_counts=db.get_activity_counts(user_id),
-        leaderboard=db.get_leaderboard()[:5],
+        leaderboard=rankings[:5],
+        user_id=user_id,
     )
 
 
@@ -55,4 +62,4 @@ def profile():
 @dashboard_bp.route("/leaderboard")
 @dashboard_bp.route("/leaderboard.html")
 def leaderboard():
-    return render_template("leaderboard.html", rankings=db.get_leaderboard())
+    return render_template("leaderboard.html", rankings=get_ranked_learners())
