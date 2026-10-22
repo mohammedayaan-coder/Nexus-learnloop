@@ -108,6 +108,7 @@ def create_app():
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=environment == "production",
+        GEMINI_API_KEY=os.getenv("GEMINI_API_KEY", "").strip(),
     )
 
     # Fail startup explicitly when SQLite cannot be initialized. Never seed

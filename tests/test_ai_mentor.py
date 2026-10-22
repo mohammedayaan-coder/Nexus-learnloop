@@ -1,6 +1,7 @@
 """Mocked integration tests for the AI mentor's Gemini request flow."""
 
 import os
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +10,7 @@ from unittest import mock
 import requests
 
 import database.database as db
+from blueprints.ai_mentor import GEMINI_DEADLINE_SECONDS, MAX_GEMINI_ATTEMPTS
 from app import create_app
 
 
@@ -33,6 +35,8 @@ class AIMentorTestCase(unittest.TestCase):
         self.original_database_path = db.DEFAULT_DATABASE_PATH
         db.DEFAULT_DATABASE_PATH = self.database_path
         db.init_db(self.database_path)
+        self.user_id = db.create_user("testlearner", "learner@test.com", "hashpass", "Python")
+
         self.environment_patcher = mock.patch.dict(
             os.environ, {"FLASK_ENV": "testing", "GEMINI_API_KEY": "server-test-key"},
         )
@@ -40,6 +44,8 @@ class AIMentorTestCase(unittest.TestCase):
         self.app = create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
+        with self.client.session_transaction() as sess:
+            sess["user_id"] = self.user_id
 
     def tearDown(self):
         self.environment_patcher.stop()
@@ -52,7 +58,7 @@ class AIMentorTestCase(unittest.TestCase):
         }]}}]}
         with mock.patch("blueprints.ai_mentor.requests.post", return_value=FakeResponse(response_body)) as post:
             response = self.client.post("/api/ai-chat", json={
-                "message": "hiiii", "topic": "Database", "model": "gemini-3.8-flash",
+                "message": "hiiii", "topic": "Database", "model": "gemini-flash-lite-latest",
                 "apiKey": "client-submitted-key",
                 "history": [{"role": "user", "text": "I am learning SQL."},
                             {"role": "model", "text": "We were discussing indexes."}],
@@ -63,11 +69,11 @@ class AIMentorTestCase(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertEqual(result["source"], "gemini")
         self.assertIn("Hi!", result["reply"])
-        self.assertEqual(result["model"], "gemini-3.8-flash")
+        self.assertEqual(result["model"], "gemini-flash-lite-latest")
         args, kwargs = post.call_args
-        self.assertEqual(args[0], "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent")
+        self.assertEqual(args[0], "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent")
         self.assertEqual(kwargs["headers"]["x-goog-api-key"], "server-test-key")
-        self.assertEqual(kwargs["timeout"], (3.05, 12.0))
+        self.assertEqual(kwargs["timeout"], (3.05, 15.0))
         payload = kwargs["json"]
         self.assertIn("warm, concise learning tutor", payload["systemInstruction"]["parts"][0]["text"])
         self.assertIn("only greets you", payload["systemInstruction"]["parts"][0]["text"])
@@ -76,10 +82,71 @@ class AIMentorTestCase(unittest.TestCase):
         self.assertIn("Selected topic: Database", payload["contents"][2]["parts"][0]["text"])
         self.assertIn("hiiii", payload["contents"][2]["parts"][0]["text"])
 
-    def test_503_recovers_on_bounded_retry(self):
+    def test_chat_requires_authentication(self):
+        """Unauthenticated client must receive 401 Unauthorized for AI chat."""
+        anon_client = self.app.test_client()
+        response = anon_client.post("/api/ai-chat", json={"message": "hello"})
+        self.assertEqual(response.status_code, 401)
+        data = response.get_json()
+        self.assertFalse(data["success"])
+        self.assertFalse(data["is_authenticated"])
+        self.assertIn("Authentication required", data["error"])
+
+    def test_chat_requires_csrf_when_outside_testing_mode(self):
+        """When not in testing mode, state-changing requests without CSRF must be rejected."""
+        self.app.config["TESTING"] = False
+        # Request without CSRF token
+        response = self.client.post("/api/ai-chat", json={"message": "hello"})
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("CSRF", response.get_json()["error"])
+
+        # Request with valid CSRF token in header
+        with self.client.session_transaction() as sess:
+            sess["_csrf_token"] = "valid-csrf-token"
+
+        response_body = {"candidates": [{"content": {"parts": [{"text": "Hello learner!"}]}}]}
+        with mock.patch("blueprints.ai_mentor.requests.post", return_value=FakeResponse(response_body)):
+            response = self.client.post(
+                "/api/ai-chat",
+                json={"message": "hello"},
+                headers={"X-CSRF-Token": "valid-csrf-token"}
+            )
+        self.assertEqual(response.status_code, 200)
+
+    def test_malformed_requests_are_rejected(self):
+        """Invalid JSON or missing/empty messages return 400."""
+        # Non-dict JSON
+        response = self.client.post("/api/ai-chat", data="not json", content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Invalid", response.get_json()["error"])
+
+        # Empty message
+        response = self.client.post("/api/ai-chat", json={"message": "   "})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Enter a message", response.get_json()["error"])
+
+    def test_oversized_message_is_rejected(self):
+        """Messages exceeding MAX_MESSAGE_LENGTH (4000) return 400."""
+        long_message = "A" * 4001
+        response = self.client.post("/api/ai-chat", json={"message": long_message})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("exceeds maximum length", response.get_json()["error"])
+
+    def test_503_high_demand_is_not_retried(self):
+        upstream = FakeResponse({"error": {"status": "UNAVAILABLE", "message": "High demand"}}, 503)
+        with mock.patch("blueprints.ai_mentor.requests.post", return_value=upstream) as post, \
+                mock.patch("blueprints.ai_mentor.time.sleep") as sleep:
+            response = self.client.post("/api/ai-chat", json={"message": "help"})
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.get_json()["source"], "gemini_error")
+        self.assertIn("temporarily unavailable", response.get_json()["error"])
+        post.assert_called_once()
+        sleep.assert_not_called()
+
+    def test_502_recovers_on_one_bounded_retry(self):
         response_body = {"candidates": [{"content": {"parts": [{"text": "Recovered answer"}]}}]}
         responses = [
-            FakeResponse({"error": {"status": "UNAVAILABLE", "message": "High demand"}}, 503),
+            FakeResponse({"error": {"status": "BAD_GATEWAY", "message": "Transient gateway issue"}}, 502),
             FakeResponse(response_body),
         ]
         with mock.patch("blueprints.ai_mentor.requests.post", side_effect=responses) as post, \
@@ -87,11 +154,10 @@ class AIMentorTestCase(unittest.TestCase):
             response = self.client.post("/api/ai-chat", json={"message": "help"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["reply"], "Recovered answer")
-        self.assertEqual(response.get_json()["source"], "gemini")
         self.assertEqual(post.call_count, 2)
         sleep.assert_called_once()
 
-    def test_repeated_503_exhausts_retries_with_clear_unavailable_error(self):
+    def test_503_is_returned_without_retry_or_timeout_conversion(self):
         upstream = FakeResponse({"error": {
             "status": "UNAVAILABLE", "message": "Temporary demand overload",
         }}, 503)
@@ -99,7 +165,7 @@ class AIMentorTestCase(unittest.TestCase):
                 mock.patch("blueprints.ai_mentor.time.sleep"):
             response = self.client.post("/api/ai-chat", json={"message": "help"})
         self.assertEqual(response.status_code, 503)
-        self.assertEqual(post.call_count, 3)
+        self.assertEqual(post.call_count, 1)
         self.assertEqual(response.get_json()["source"], "gemini_error")
         self.assertIn("temporarily unavailable", response.get_json()["error"])
         self.assertNotIn("reply", response.get_json())
@@ -113,9 +179,19 @@ class AIMentorTestCase(unittest.TestCase):
                 mock.patch("blueprints.ai_mentor.time.sleep"):
             self.client.post("/api/ai-chat", json={"message": "help"})
         logs = " ".join(captured.output)
-        self.assertIn("HTTP 503", logs)
+        self.assertIn("http_status=503", logs)
         self.assertIn("UNAVAILABLE", logs)
+        self.assertIn("duration_ms=", logs)
+        self.assertNotIn("Temporary failure", logs)
         self.assertNotIn("AIza012345678901234567890123456789", logs)
+
+    def test_frontend_timeout_exceeds_bounded_backend_deadline(self):
+        client_file = Path(__file__).resolve().parents[1] / "static" / "js" / "ai_agent.js"
+        source = client_file.read_text(encoding="utf-8")
+        timeout_match = re.search(r"controller\.abort\(\),\s*(\d+)\)", source)
+        self.assertIsNotNone(timeout_match)
+        self.assertGreater(int(timeout_match.group(1)), GEMINI_DEADLINE_SECONDS * 1000)
+        self.assertEqual(MAX_GEMINI_ATTEMPTS, 2)
 
     def test_429_retries_and_respects_retry_after(self):
         success = FakeResponse({"candidates": [{"content": {"parts": [{"text": "After limit"}]}}]})
@@ -133,11 +209,53 @@ class AIMentorTestCase(unittest.TestCase):
                 mock.patch("blueprints.ai_mentor.time.sleep"):
             response = self.client.post("/api/ai-chat", json={"message": "help", "topic": "Python"})
         self.assertEqual(response.status_code, 504)
-        self.assertEqual(post.call_count, 3)
+        self.assertEqual(post.call_count, 1)
         result = response.get_json()
         self.assertFalse(result["success"])
         self.assertEqual(result["source"], "gemini_error")
         self.assertIn("too long", result["error"])
+        self.assertNotIn("reply", result)
+
+    def test_gemini_connection_failure_returns_clear_temporary_unavailable_error(self):
+        with mock.patch("blueprints.ai_mentor.requests.post", side_effect=requests.ConnectionError) as post, \
+                mock.patch("blueprints.ai_mentor.time.sleep"):
+            response = self.client.post("/api/ai-chat", json={"message": "hi"})
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(post.call_count, 2)
+        result = response.get_json()
+        self.assertFalse(result["success"])
+        self.assertEqual(result["source"], "gemini_error")
+        self.assertEqual(result["error"], "Could not reach Gemini. Please try again shortly.")
+        self.assertNotIn("reply", result)
+
+    def test_gemini_response_parses_text_across_parts(self):
+        response_body = {"candidates": [{"content": {"parts": [
+            {"text": "Hello "}, {"text": "learner!"}, {"inlineData": {"data": "ignored"}},
+        ]}}]}
+        with mock.patch("blueprints.ai_mentor.requests.post", return_value=FakeResponse(response_body)):
+            response = self.client.post("/api/ai-chat", json={"message": "hi"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["reply"], "Hello learner!")
+
+    def test_gemini_response_omits_internal_thought_parts(self):
+        response_body = {"candidates": [{"content": {"parts": [
+            {"text": "private reasoning", "thought": True},
+            {"text": "Public answer."},
+        ]}}]}
+        with mock.patch("blueprints.ai_mentor.requests.post", return_value=FakeResponse(response_body)):
+            response = self.client.post("/api/ai-chat", json={"message": "hi"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["reply"], "Public answer.")
+
+    def test_gemini_safety_block_is_returned_as_safe_rephrase_guidance(self):
+        blocked = FakeResponse({
+            "candidates": [{"finishReason": "SAFETY", "content": {"parts": [{"text": "blocked partial text"}]}}],
+        })
+        with mock.patch("blueprints.ai_mentor.requests.post", return_value=blocked):
+            response = self.client.post("/api/ai-chat", json={"message": "help"})
+        self.assertEqual(response.status_code, 422)
+        result = response.get_json()
+        self.assertIn("rephrase", result["error"])
         self.assertNotIn("reply", result)
 
     def test_invalid_or_empty_gemini_response_is_not_reported_as_success(self):
@@ -184,9 +302,11 @@ class AIMentorTestCase(unittest.TestCase):
     def test_missing_server_key_returns_unavailable_without_calling_provider(self):
         with mock.patch.dict(os.environ, {"GEMINI_API_KEY": ""}), \
                 mock.patch("blueprints.ai_mentor.requests.post") as post:
+            self.app.config["GEMINI_API_KEY"] = ""
             response = self.client.post("/api/ai-chat", json={"message": "help"})
         self.assertEqual(response.status_code, 503)
         self.assertFalse(response.get_json()["success"])
+        self.assertEqual(response.get_json()["error"], "AI Mentor is temporarily unavailable. Please try again later.")
         self.assertNotIn("reply", response.get_json())
         post.assert_not_called()
 
@@ -198,6 +318,22 @@ class AIMentorTestCase(unittest.TestCase):
         self.assertTrue(data["has_backend_key"])
         self.assertNotIn("online", data["status"])
         self.assertNotIn("key", str(data).lower().replace("has_backend_key", ""))
+
+    def test_ui_has_no_api_settings_modal_or_key_inputs(self):
+        """User-facing AI Mentor page must not contain API settings modal, key inputs, or test buttons."""
+        response = self.client.get("/ai-agent")
+        self.assertEqual(response.status_code, 200)
+        html = response.data.decode("utf-8")
+        self.assertNotIn("api-config-modal", html)
+        self.assertNotIn("api-key-input", html)
+        self.assertNotIn("config-key-btn", html)
+        self.assertNotIn("test-connection-btn", html)
+        self.assertNotIn("detect-models-btn", html)
+        self.assertNotIn("clear-key-btn", html)
+        self.assertNotIn("save-key-btn", html)
+        self.assertNotIn("AI Mentor API & Engine Settings", html)
+        self.assertNotIn("AI Mentor API &amp; Engine Settings", html)
+        self.assertNotIn("Client Browser Key", html)
 
 
 if __name__ == "__main__":

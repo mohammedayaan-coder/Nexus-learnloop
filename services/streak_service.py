@@ -33,15 +33,15 @@ def calculate_streak(activity_dates):
         return 0
 
     today = datetime.now(timezone.utc).date()
+    local_today = date.today()
     yesterday = today - timedelta(days=1)
+    local_yesterday = local_today - timedelta(days=1)
 
-    # Determine starting anchor point
-    if today in parsed_dates:
-        current_check = today
-    elif yesterday in parsed_dates:
-        current_check = yesterday
-    else:
+    # Determine starting anchor point (supporting both UTC and local calendar days)
+    candidates = [d for d in {local_today, today, local_yesterday, yesterday} if d in parsed_dates]
+    if not candidates:
         return 0
+    current_check = max(candidates)
 
     streak = 0
     while current_check in parsed_dates:

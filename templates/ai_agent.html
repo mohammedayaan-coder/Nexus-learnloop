@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nexus Learn Loop — AI Learning Agent</title>
   <meta name="description" content="Ask technical questions, debug code, and explore concepts with your 24/7 AI programming mentor on Nexus Learn Loop."/>
+  <meta name="csrf-token" content="{{ csrf_token() }}"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
@@ -87,12 +88,10 @@
       <div>
         <div class="flex items-center gap-2">
           <h1 class="text-lg font-bold text-on-surface">Nexus AI Mentor</h1>
-          <button id="config-key-btn" title="Click to view or set your Google Gemini API Key" class="flex items-center">
-            <span id="api-status-badge" class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant text-[10px] font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-surface-container-highest transition-colors shadow-sm">
-              <span class="material-symbols-outlined text-[13px] text-primary">key</span>
-              <span>Set Gemini Key</span>
-            </span>
-          </button>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-[10px] font-semibold flex items-center gap-1.5 shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>24/7 AI Tutor</span>
+          </span>
         </div>
         <p class="text-xs text-on-surface-variant">Ask doubts, understand code logic, or get hints on daily challenges.</p>
       </div>
@@ -145,6 +144,7 @@
 
   <!-- Message Input Form -->
   <form id="chat-form" class="bg-surface-container-lowest p-2 rounded-2xl border-2 border-outline-variant focus-within:border-primary shadow-sm flex items-center gap-2 shrink-0 transition-colors">
+    <input type="hidden" name="csrf_token" id="csrf-token" value="{{ csrf_token() }}"/>
     <div class="pl-3 text-outline">
       <span class="material-symbols-outlined text-[20px]">chat</span>
     </div>
@@ -154,100 +154,6 @@
       <span class="material-symbols-outlined text-[16px]">send</span>
     </button>
   </form>
-
-  <!-- API Settings & Key Configuration Modal -->
-  <div id="api-config-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4" style="display: none;">
-    <div class="bg-surface-container-lowest max-w-lg w-full rounded-3xl border border-outline-variant shadow-2xl p-6 space-y-5">
-      
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-3 border-b border-outline-variant">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
-            <span class="material-symbols-outlined text-[18px]">tune</span>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-on-surface">AI Mentor API & Engine Settings</h3>
-            <p class="text-[11px] text-on-surface-variant">Configure Google Gemini API credentials and model engines.</p>
-          </div>
-        </div>
-        <button id="close-modal-btn" type="button" class="w-7 h-7 rounded-lg hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors">
-          <span class="material-symbols-outlined text-[18px]">close</span>
-        </button>
-      </div>
-
-      <!-- Environment & Live Status Row -->
-      <div class="p-3.5 rounded-2xl bg-surface-container-low border border-outline-variant space-y-2 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-on-surface-variant font-medium">Backend (.env) API Key:</span>
-          <span id="backend-status-indicator" class="font-bold flex items-center gap-1.5 text-on-surface text-[11px]">
-            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Checking...
-          </span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-on-surface-variant font-medium">Client Browser Key:</span>
-          <span id="client-status-indicator" class="font-bold flex items-center gap-1.5 text-on-surface text-[11px]">
-            <span class="w-2 h-2 rounded-full bg-slate-400"></span> None (Using Backend or Offline)
-          </span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-on-surface-variant font-medium">Active Reasoning Engine:</span>
-          <span id="active-model-display" class="font-label-code font-bold text-primary">gemini-3.8-flash</span>
-        </div>
-      </div>
-
-      <!-- API Key Field -->
-      <div class="space-y-1.5">
-        <label for="api-key-input" class="block text-xs font-bold text-on-surface">Google Gemini API Key</label>
-        <div class="relative flex items-center">
-          <input id="api-key-input" type="password" autocomplete="off" placeholder="Paste your API key (AQ... or AIzaSy...)" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-xs font-label-code bg-surface text-on-surface placeholder:text-outline"/>
-          <button type="button" id="toggle-key-eye" class="absolute right-3 text-on-surface-variant hover:text-primary transition-colors">
-            <span class="material-symbols-outlined text-[18px]" id="eye-icon">visibility</span>
-          </button>
-        </div>
-        <p class="text-[10px] text-on-surface-variant leading-relaxed">
-          Supports modern Authorization Keys (<code class="font-label-code text-primary font-bold">AQ...</code>) and standard keys (<code class="font-label-code text-primary font-bold">AIzaSy...</code>). Generate free at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-primary underline font-bold">Google AI Studio</a>.
-        </p>
-      </div>
-
-      <!-- Model Selector -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <label for="model-select" class="block text-xs font-bold text-on-surface">Select Reasoning Engine</label>
-          <button type="button" id="detect-models-btn" class="text-[10px] text-primary hover:underline font-bold flex items-center gap-1">
-            <span class="material-symbols-outlined text-[13px]">sync</span>
-            <span>Detect Available Models</span>
-          </button>
-        </div>
-        <select id="model-select" class="w-full px-3 py-2.5 rounded-xl border border-outline-variant text-xs font-medium bg-surface text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
-          <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (Active Key Engine)</option>
-        </select>
-        <div id="custom-model-container" class="hidden mt-2">
-          <input id="custom-model-input" type="text" placeholder="gemini-3.8-flash" class="w-full pl-3.5 pr-3 py-2 rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-xs font-label-code bg-surface text-on-surface placeholder:text-outline"/>
-        </div>
-      </div>
-
-      <!-- Test Connection Result Box -->
-      <div id="test-result-box" class="hidden p-3 rounded-xl text-xs leading-relaxed"></div>
-
-      <!-- Action Buttons -->
-      <div class="flex items-center justify-between pt-2">
-        <button type="button" id="test-connection-btn" class="tactile-ghost px-3.5 py-2 rounded-xl border border-outline-variant text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[16px]">network_check</span>
-          <span>Test Connection</span>
-        </button>
-        <div class="flex items-center gap-2">
-          <button type="button" id="clear-key-btn" class="px-3 py-2 rounded-xl border border-transparent text-xs font-bold text-error hover:bg-error/10 transition-colors">
-            Clear
-          </button>
-          <button type="button" id="save-key-btn" class="tactile-primary px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 hover:bg-primary/95 transition-all shadow-sm">
-            <span class="material-symbols-outlined text-[16px]">save</span>
-            <span>Save Settings</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
 
 </main>
 

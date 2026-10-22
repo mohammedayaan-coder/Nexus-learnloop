@@ -9,22 +9,34 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 
 import requests
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, current_app, jsonify, render_template, request
+
+from services.security import login_required, require_csrf
 
 ai_mentor_bp = Blueprint("ai_mentor", __name__)
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "gemini-3.8-flash"
+DEFAULT_MODEL = "gemini-flash-lite-latest"
 SUPPORTED_MODELS = (DEFAULT_MODEL,)
 ALLOWED_TOPICS = {"Python", "Frontend", "Database", "DevOps", "General"}
 GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 MAX_MESSAGE_LENGTH = 4000
 MAX_HISTORY_TURNS = 12
 MODEL_PATTERN = re.compile(r"^[a-zA-Z0-9._-]{1,100}$")
-MAX_GEMINI_ATTEMPTS = 3
-GEMINI_DEADLINE_SECONDS = 30.0
+MAX_GEMINI_ATTEMPTS = 2
+GEMINI_DEADLINE_SECONDS = 20.0
 GEMINI_CONNECT_TIMEOUT_SECONDS = 3.05
-GEMINI_READ_TIMEOUT_SECONDS = 12.0
+GEMINI_READ_TIMEOUT_SECONDS = 15.0
+GEMINI_BLOCKED_REASONS = {"SAFETY", "BLOCKLIST", "PROHIBITED_CONTENT", "SPII"}
+
+
+def _get_gemini_api_key():
+    """Read GEMINI_API_KEY from Flask configuration or server environment."""
+    if current_app:
+        key = current_app.config.get("GEMINI_API_KEY")
+        if key:
+            return str(key).strip()
+    return os.getenv("GEMINI_API_KEY", "").strip()
 
 
 def _request_model(model):
@@ -55,13 +67,37 @@ def _gemini_reply(response):
     candidates = payload.get("candidates")
     if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict):
         return None
+    if candidates[0].get("finishReason") in GEMINI_BLOCKED_REASONS:
+        return None
     content = candidates[0].get("content")
     parts = content.get("parts") if isinstance(content, dict) else None
     if not isinstance(parts, list):
         return None
-    text = "".join(part.get("text", "") for part in parts
-                   if isinstance(part, dict) and isinstance(part.get("text"), str)).strip()
+    text = "".join(
+        part.get("text", "") for part in parts
+        if isinstance(part, dict) and part.get("thought") is not True
+        and isinstance(part.get("text"), str)
+    ).strip()
     return text or None
+
+
+def _gemini_response_blocked(response):
+    """Recognize provider safety blocks without exposing provider response text."""
+    try:
+        payload = response.json()
+    except (ValueError, TypeError, AttributeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    feedback = payload.get("promptFeedback")
+    if isinstance(feedback, dict) and isinstance(feedback.get("blockReason"), str):
+        return True
+    candidates = payload.get("candidates")
+    return (
+        isinstance(candidates, list)
+        and any(isinstance(candidate, dict) and candidate.get("finishReason") in GEMINI_BLOCKED_REASONS
+                for candidate in candidates)
+    )
 
 
 def _service_error(message, status=502):
@@ -128,17 +164,20 @@ def _retry_after_seconds(response, provider_error):
 
 def _is_retryable(response, provider_error):
     status = response.status_code
-    if status in {408, 500, 502, 503, 504}:
+    # Do not replay slow/unavailable generations: this can turn a provider 503
+    # into a route deadline timeout and make the learner wait through duplicates.
+    if status in {500, 502}:
         return True
     if status == 429:
         reasons = {reason.lower() for reason in provider_error["reasons"]}
         # A depleted daily/project quota will not clear through a short retry.
-        return "quota_exceeded" not in reasons
+        retry_after = provider_error.get("retry_after")
+        return "quota_exceeded" not in reasons and (retry_after is None or retry_after <= 1.0)
     return False
 
 
 def _generate_with_retry(model, key, payload):
-    """Make bounded transient retries while honoring Retry-After and a total budget."""
+    """Make at most one fast transient retry within a short total budget."""
     deadline = time.monotonic() + GEMINI_DEADLINE_SECONDS
     url = GEMINI_ENDPOINT.format(model=model)
     last_response = None
@@ -150,6 +189,7 @@ def _generate_with_retry(model, key, payload):
             break
         connect_timeout = min(GEMINI_CONNECT_TIMEOUT_SECONDS, max(0.1, remaining / 3))
         read_timeout = min(GEMINI_READ_TIMEOUT_SECONDS, max(0.1, remaining - connect_timeout))
+        attempt_started = time.monotonic()
         try:
             response = requests.post(
                 url,
@@ -158,27 +198,46 @@ def _generate_with_retry(model, key, payload):
                 timeout=(connect_timeout, read_timeout),
             )
             if response.ok:
+                logger.info(
+                    "Gemini upstream category=success http_status=%s attempt=%s duration_ms=%s",
+                    response.status_code, attempt + 1,
+                    int((time.monotonic() - attempt_started) * 1000),
+                )
                 return response, None
             info = _provider_error(response)
+            retry_after = _retry_after_seconds(response, info)
+            info["retry_after"] = retry_after
             logger.warning(
-                "Gemini upstream HTTP %s status=%s reasons=%s message=%s attempt=%s",
-                response.status_code, info["status"], ",".join(info["reasons"]),
-                info["message"], attempt + 1,
+                "Gemini upstream category=provider_error http_status=%s status=%s reasons=%s attempt=%s duration_ms=%s",
+                response.status_code, info["status"], ",".join(info["reasons"]), attempt + 1,
+                int((time.monotonic() - attempt_started) * 1000),
             )
             last_response, last_error = response, info
             if not _is_retryable(response, info):
                 break
-            retry_after = _retry_after_seconds(response, info)
         except requests.Timeout as error:
-            logger.warning("Gemini upstream timeout type=%s attempt=%s", type(error).__name__, attempt + 1)
+            logger.warning(
+                "Gemini upstream category=timeout type=%s attempt=%s duration_ms=%s",
+                type(error).__name__, attempt + 1,
+                int((time.monotonic() - attempt_started) * 1000),
+            )
             last_response, last_error = None, {"status": "TIMEOUT", "message": "[request timed out]", "reasons": []}
-            retry_after = None
+            # A read timeout means generation is already slow; don't repeat it.
+            break
         except requests.ConnectionError as error:
-            logger.warning("Gemini upstream connection failure type=%s attempt=%s", type(error).__name__, attempt + 1)
+            logger.warning(
+                "Gemini upstream category=connection_error type=%s attempt=%s duration_ms=%s",
+                type(error).__name__, attempt + 1,
+                int((time.monotonic() - attempt_started) * 1000),
+            )
             last_response, last_error = None, {"status": "CONNECTION_ERROR", "message": "[connection failed]", "reasons": []}
             retry_after = None
         except requests.RequestException as error:
-            logger.warning("Gemini request failed type=%s attempt=%s", type(error).__name__, attempt + 1)
+            logger.warning(
+                "Gemini upstream category=request_error type=%s attempt=%s duration_ms=%s",
+                type(error).__name__, attempt + 1,
+                int((time.monotonic() - attempt_started) * 1000),
+            )
             last_response, last_error = None, {"status": "REQUEST_ERROR", "message": "[request failed]", "reasons": []}
             break
 
@@ -208,6 +267,8 @@ def _upstream_failure(response, info):
         return _service_error("Gemini is temporarily unavailable. Please try again shortly.", 503)
     if info and info["status"] == "TIMEOUT":
         return _service_error("Gemini took too long to respond. Please try again shortly.", 504)
+    if info and info["status"] in {"CONNECTION_ERROR", "REQUEST_ERROR"}:
+        return _service_error("Could not reach Gemini. Please try again shortly.", 503)
     return _service_error("Gemini could not complete this request. Please try again shortly.", 502)
 
 
@@ -219,7 +280,7 @@ def ai_agent():
 
 @ai_mentor_bp.route("/api/ai-status")
 def ai_status():
-    configured = bool(os.getenv("GEMINI_API_KEY", "").strip())
+    configured = bool(_get_gemini_api_key())
     return jsonify({
         "status": "configured" if configured else "unconfigured",
         "has_backend_key": configured,
@@ -234,19 +295,19 @@ def ai_models():
 
 
 @ai_mentor_bp.route("/api/ai-test-key", methods=["POST"])
+@login_required
+@require_csrf
 def ai_test_key():
-    # A user-entered key is used only for this explicit connection test. Chat
-    # requests always use the server's GEMINI_API_KEY and never return it.
     data = request.get_json(silent=True) or {}
     if not isinstance(data, dict):
         return jsonify({"success": False, "error": "Invalid connection-test request."}), 400
-    key = str(data.get("apiKey") or os.getenv("GEMINI_API_KEY", "")).strip()
+    key = _get_gemini_api_key()
     try:
         model = _request_model(data.get("model"))
     except ValueError as error:
         return jsonify({"success": False, "error": str(error)}), 400
     if not key:
-        return jsonify({"success": False, "error": "No API key is configured."}), 400
+        return jsonify({"success": False, "error": "AI Mentor is temporarily unavailable. Please try again later."}), 503
     try:
         response = requests.post(
             GEMINI_ENDPOINT.format(model=model),
@@ -260,7 +321,7 @@ def ai_test_key():
         return _service_error("Could not reach Gemini. Please try again shortly.")
     if not response.ok:
         logger.warning("Gemini connection test returned HTTP %s", response.status_code)
-        return _service_error("Gemini rejected the connection test. Check the key and model.")
+        return _service_error("Gemini rejected the connection test.")
     try:
         if _gemini_reply(response):
             return jsonify({"success": True, "message": "Gemini connection verified.", "model": model})
@@ -270,14 +331,22 @@ def ai_test_key():
 
 
 @ai_mentor_bp.route("/api/ai-chat", methods=["POST"])
+@login_required
+@require_csrf
 def ai_chat():
-    data = request.get_json(silent=True) or {}
+    if request.is_json and request.get_json(silent=True) is None and request.data.strip():
+        return jsonify({"success": False, "error": "Invalid JSON in chat request."}), 400
+    data = request.get_json(silent=True)
+    if data is None:
+        data = {}
     if not isinstance(data, dict):
         return jsonify({"success": False, "error": "Invalid chat request."}), 400
     message = data.get("message")
     if not isinstance(message, str) or not message.strip():
         return jsonify({"success": False, "error": "Enter a message for the AI Mentor."}), 400
-    message = message.strip()[:MAX_MESSAGE_LENGTH]
+    if len(message) > MAX_MESSAGE_LENGTH:
+        return jsonify({"success": False, "error": f"Message exceeds maximum length of {MAX_MESSAGE_LENGTH} characters."}), 400
+    message = message.strip()
     try:
         model = _request_model(data.get("model"))
     except ValueError as error:
@@ -285,9 +354,9 @@ def ai_chat():
 
     requested_topic = data.get("topic")
     topic = requested_topic if isinstance(requested_topic, str) and requested_topic in ALLOWED_TOPICS else "General"
-    key = os.getenv("GEMINI_API_KEY", "").strip()
+    key = _get_gemini_api_key()
     if not key:
-        return _service_error("Gemini is not configured on this server. Please contact the site administrator.", 503)
+        return _service_error("AI Mentor is temporarily unavailable. Please try again later.", 503)
 
     contents = _clean_history(data.get("history"))
     contents.append({"role": "user", "parts": [{"text": f"Selected topic: {topic}\n{message}"}]})
@@ -310,5 +379,7 @@ def ai_chat():
         logger.warning("Gemini response parsing failed (%s)", type(error).__name__)
         reply = None
     if not reply:
+        if _gemini_response_blocked(response):
+            return _service_error("Gemini could not answer that prompt. Please rephrase it and try again.", 422)
         return _service_error("Gemini returned an empty or unreadable answer. Please try again.")
     return jsonify({"success": True, "reply": reply, "source": "gemini", "model": model})

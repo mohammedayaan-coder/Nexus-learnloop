@@ -62,3 +62,9 @@ yarn-error.log*
 
 changes.md
 progress.md
+
+.env
+instance/
+*.db
+
+services/streak_service.py
