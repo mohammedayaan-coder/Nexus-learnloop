@@ -1,10 +1,12 @@
 """SQLite initialization and non-destructive migration tests."""
 
 import sqlite3
+import os
 import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path
+from unittest import mock
 
 import database.database as db
 
@@ -16,6 +18,22 @@ class DatabaseInitializationTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.temp_dir.cleanup()
+
+    def test_vercel_uses_writable_tmp_database_by_default(self):
+        with mock.patch.dict(os.environ, {"VERCEL": "1", "VERCEL_ENV": "production"}, clear=False):
+            os.environ.pop("NEXUS_DATABASE_PATH", None)
+            self.assertEqual(db.get_default_database_path(), Path("/tmp/nexus-learnloop.db"))
+
+    def test_database_path_can_be_configured_without_changing_local_default(self):
+        configured_path = Path(self.temp_dir.name) / "configured.db"
+        with mock.patch.dict(os.environ, {
+            "NEXUS_DATABASE_PATH": str(configured_path), "VERCEL": "", "VERCEL_ENV": "",
+        }):
+            self.assertEqual(db.get_default_database_path(), configured_path)
+
+    def test_local_database_default_is_unchanged_outside_vercel(self):
+        with mock.patch.dict(os.environ, {"NEXUS_DATABASE_PATH": "", "VERCEL": "", "VERCEL_ENV": ""}):
+            self.assertEqual(db.get_default_database_path(), db.DEFAULT_DATABASE_PATH)
 
     def test_fresh_database_migrates_and_enforces_case_insensitive_uniqueness(self):
         db.init_db(self.database_path)

@@ -7,6 +7,8 @@ import unittest
 import os
 import re
 import secrets
+import subprocess
+import sys
 import tempfile
 from contextlib import closing
 from pathlib import Path
@@ -14,7 +16,7 @@ from unittest import mock
 from app import create_app
 import database.database as db
 from werkzeug.security import check_password_hash, generate_password_hash
-from services.security import get_secret_key
+from services.security import get_runtime_environment, get_secret_key
 
 
 class AuthAndBoundariesTestCase(unittest.TestCase):
@@ -172,6 +174,54 @@ class AuthAndBoundariesTestCase(unittest.TestCase):
         strong_key = secrets.token_urlsafe(32)
         with mock.patch.dict(os.environ, {"FLASK_ENV": "production", "SECRET_KEY": strong_key}):
             self.assertEqual(get_secret_key(), strong_key)
+
+    def test_vercel_environment_is_detected_as_production_and_requires_secret(self):
+        with mock.patch.dict(os.environ, {
+            "VERCEL_ENV": "production", "FLASK_ENV": "", "APP_ENV": "", "ENV": "",
+        }, clear=False):
+            self.assertEqual(get_runtime_environment(), "production")
+            with mock.patch.dict(os.environ, {"SECRET_KEY": ""}):
+                with self.assertRaisesRegex(RuntimeError, "high-entropy SECRET_KEY"):
+                    get_secret_key()
+
+    def test_vercel_production_app_starts_without_seeding_demo_data(self):
+        database_path = Path(self.temp_dir.name) / "vercel.db"
+        environment = {"VERCEL_ENV": "production", "FLASK_ENV": "", "APP_ENV": "", "ENV": "",
+                       "SECRET_KEY": secrets.token_urlsafe(32),
+                       "NEXUS_DATABASE_PATH": str(database_path)}
+        with mock.patch.dict(os.environ, environment), \
+                mock.patch.object(db, "seed_defaults_if_empty") as seed:
+            vercel_app = create_app()
+        self.assertEqual(vercel_app.config["RUNTIME_ENVIRONMENT"], "production")
+        seed.assert_not_called()
+
+    def test_vercel_preview_requires_a_strong_secret(self):
+        with mock.patch.dict(os.environ, {"VERCEL_ENV": "preview", "SECRET_KEY": ""}):
+            self.assertEqual(get_runtime_environment(), "preview")
+            with self.assertRaisesRegex(RuntimeError, "high-entropy SECRET_KEY"):
+                get_secret_key()
+
+    def test_top_level_app_import_succeeds_in_vercel_production(self):
+        database_path = Path(self.temp_dir.name) / "vercel-import.db"
+        environment = os.environ.copy()
+        environment.update({
+            "VERCEL": "1",
+            "VERCEL_ENV": "production",
+            "FLASK_ENV": "",
+            "APP_ENV": "",
+            "ENV": "",
+            "SECRET_KEY": secrets.token_urlsafe(32),
+            "NEXUS_DATABASE_PATH": str(database_path),
+        })
+        completed = subprocess.run(
+            [sys.executable, "-c", "import app; assert hasattr(app.app, 'wsgi_app')"],
+            cwd=Path(__file__).resolve().parent.parent,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
 
     def test_production_never_seeds_demo_data(self):
         environment = {"FLASK_ENV": "production", "SECRET_KEY": secrets.token_urlsafe(32)}

@@ -1,5 +1,6 @@
 """SQLite persistence for Nexus Learn Loop."""
 
+import os
 import sqlite3
 from contextlib import closing
 from datetime import date, datetime, timedelta, timezone
@@ -13,13 +14,27 @@ DEFAULT_DATABASE_PATH = Path(__file__).resolve().parent.parent / "instance" / "n
 SCHEMA_VERSION = 4
 
 
+def get_default_database_path():
+    """Return the configured SQLite path, using Vercel's writable scratch space there.
+
+    Vercel Functions package application files on a read-only filesystem. `/tmp`
+    is writable for the lifetime of a function instance, but is not durable storage.
+    """
+    configured_path = os.getenv("NEXUS_DATABASE_PATH", "").strip()
+    if configured_path:
+        return Path(configured_path).expanduser()
+    if os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV"):
+        return Path("/tmp") / "nexus-learnloop.db"
+    return DEFAULT_DATABASE_PATH
+
+
 class DatabaseMigrationError(RuntimeError):
     """Raised when an existing database cannot be upgraded without data loss."""
 
 
 def connect(database_path=None):
     """Open a configured SQLite connection with foreign keys enabled."""
-    path = Path(database_path or DEFAULT_DATABASE_PATH)
+    path = Path(database_path) if database_path is not None else get_default_database_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path)
     connection.row_factory = sqlite3.Row

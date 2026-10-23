@@ -107,7 +107,7 @@ def create_app():
         RUNTIME_ENVIRONMENT=environment,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=environment == "production",
+        SESSION_COOKIE_SECURE=environment in {"production", "preview"},
         GEMINI_API_KEY=os.getenv("GEMINI_API_KEY", "").strip(),
     )
 

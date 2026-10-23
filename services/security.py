@@ -14,7 +14,15 @@ import database.database as db
 
 def get_runtime_environment():
     """Return the configured deployment environment, defaulting to development."""
-    return (os.getenv("FLASK_ENV") or os.getenv("APP_ENV") or os.getenv("ENV") or "development").strip().lower()
+    vercel_environment = os.getenv("VERCEL_ENV", "").strip().lower()
+    if vercel_environment:
+        return vercel_environment
+    if os.getenv("VERCEL") == "1":
+        # Fail closed if Vercel does not provide VERCEL_ENV; never seed demo data.
+        return "production"
+    return (
+        os.getenv("FLASK_ENV") or os.getenv("APP_ENV") or os.getenv("ENV") or "development"
+    ).strip().lower()
 
 
 def get_secret_key():
@@ -25,11 +33,11 @@ def get_secret_key():
     env = get_runtime_environment()
     secret = os.getenv("SECRET_KEY", "").strip()
 
-    if env == "production":
+    if env in {"production", "preview"}:
         if (len(secret) < 32 or len(set(secret)) < 16
                 or secret == "nexus-learn-loop-dev-secret-key-2026"):
             raise RuntimeError(
-                "Production requires a high-entropy SECRET_KEY environment variable. "
+                "Production and preview deployments require a high-entropy SECRET_KEY environment variable. "
                 "Generate one with Python's secrets.token_urlsafe(32)."
             )
         return secret
