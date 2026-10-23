@@ -26,6 +26,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageFeed = document.getElementById("message-feed");
   const toggleMembersBtn = document.getElementById("toggle-members-btn");
   const membersSidebar = document.getElementById("members-sidebar");
+  const channelsSidebar = document.getElementById("channels-sidebar");
+  const toggleChannelsBtn = document.getElementById("toggle-channels-btn");
+
+  if (channelsSidebar && toggleChannelsBtn) {
+    const closeChannels = () => {
+      channelsSidebar.classList.remove("mobile-open");
+      toggleChannelsBtn.setAttribute("aria-expanded", "false");
+    };
+    toggleChannelsBtn.addEventListener("click", () => {
+      const open = channelsSidebar.classList.toggle("mobile-open");
+      toggleChannelsBtn.setAttribute("aria-expanded", String(open));
+    });
+    channelsSidebar.querySelectorAll(".text-channel-item, .voice-channel-item").forEach((item) => {
+      item.addEventListener("click", closeChannels);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeChannels();
+    });
+  }
 
   // User Audio Controls
   const toggleMicBtn = document.getElementById("toggle-mic-btn");

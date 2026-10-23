@@ -2,6 +2,57 @@
  * Nexus Learn Loop — Main Application JS
  */
 document.addEventListener("DOMContentLoaded", () => {
+  // Responsive site navigation. Keep the same links and desktop appearance;
+  // expose the existing nav as an accessible disclosure on narrow screens.
+  document.querySelectorAll("header nav").forEach((nav, index) => {
+    const header = nav.closest("header");
+    if (!header) return;
+
+    header.classList.add("site-header");
+    nav.classList.add("site-navigation");
+    const menuId = nav.id || `site-navigation-${index + 1}`;
+    nav.id = menuId;
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "site-menu-toggle";
+    toggle.setAttribute("aria-label", "Open navigation menu");
+    toggle.setAttribute("aria-controls", menuId);
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">menu</span>';
+    header.appendChild(toggle);
+
+    const closeMenu = () => {
+      nav.classList.remove("site-navigation-open");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Open navigation menu");
+      toggle.querySelector(".material-symbols-outlined").textContent = "menu";
+    };
+
+    toggle.addEventListener("click", () => {
+      const open = nav.classList.toggle("site-navigation-open");
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+      toggle.querySelector(".material-symbols-outlined").textContent = open ? "close" : "menu";
+      if (open) nav.querySelector("a")?.focus();
+    });
+
+    nav.addEventListener("click", (event) => {
+      if (event.target.closest("a")) closeMenu();
+    });
+
+    header.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && nav.classList.contains("site-navigation-open")) {
+        closeMenu();
+        toggle.focus();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.matchMedia("(min-width: 1024px)").matches) closeMenu();
+    });
+  });
+
   // 1. Flash alert auto-dismiss
   const flashMessages = document.querySelectorAll(".flash, [role='alert']");
   flashMessages.forEach((message) => {

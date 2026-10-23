@@ -103,7 +103,7 @@
     <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant p-8 shadow-sm flex flex-col items-center relative overflow-hidden">
 
       <!-- Preset Mode Tabs -->
-      <div class="p-1.5 bg-surface-container-low rounded-full border border-outline-variant flex items-center gap-1 mb-6 shadow-inner">
+      <div class="timer-presets p-1.5 bg-surface-container-low rounded-full border border-outline-variant flex items-center gap-1 mb-6 shadow-inner">
         <button id="mode-pomodoro" class="preset px-5 py-2 rounded-full bg-surface-container-lowest text-primary font-bold text-xs shadow-sm transition-all flex items-center gap-1.5" data-minutes="25">
           <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
           <span>Pomodoro (25m)</span>
@@ -117,7 +117,7 @@
       </div>
 
       <!-- Circular SVG Countdown Ring -->
-      <div class="relative w-72 h-72 flex items-center justify-center my-2">
+      <div class="timer-ring relative w-72 h-72 flex items-center justify-center my-2">
         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 300 300">
           <circle class="text-surface-container-highest" cx="150" cy="150" fill="transparent" r="130" stroke="currentColor" stroke-width="12"></circle>
           <circle id="timer-ring" class="text-primary timer-ring-circle" cx="150" cy="150" fill="transparent" r="130" stroke="currentColor" stroke-linecap="round" stroke-width="12"></circle>
@@ -137,7 +137,7 @@
       </div>
 
       <!-- Controls -->
-      <div class="flex items-center gap-4">
+      <div class="timer-controls flex items-center gap-4">
         <button id="timer-reset" class="tactile-ghost w-12 h-12 rounded-full bg-surface-container-low border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" title="Reset Session">
           <span class="material-symbols-outlined text-[20px]">restart_alt</span>
         </button>
