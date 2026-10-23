@@ -332,6 +332,41 @@ class AuthAndBoundariesTestCase(unittest.TestCase):
         self.assertEqual(timer_response.status_code, 302)
         self.assertEqual(db.get_user_stats(user_id)["study_minutes"], before_minutes + 25)
 
+    def test_repeated_profile_saves_do_not_award_xp_or_activity(self):
+        self.client.post("/login", data={"username": "learner", "password": "password123"})
+        user_id = db.get_user_by_login("learner")["id"]
+        before_stats = db.get_user_stats(user_id)
+        before_leaderboard = next(
+            row["xp"] for row in db.get_leaderboard() if row["id"] == user_id
+        )
+
+        for index in range(3):
+            response = self.client.post("/profile", data={
+                "bio": f"Profile bio {index}",
+                "learning_goals": f"Goal {index}",
+                "skills": f"Skill {index}",
+            })
+            self.assertEqual(response.status_code, 302)
+
+        after_stats = db.get_user_stats(user_id)
+        after_leaderboard = next(
+            row["xp"] for row in db.get_leaderboard() if row["id"] == user_id
+        )
+        self.assertEqual(after_stats["xp"], before_stats["xp"])
+        self.assertEqual(after_stats["activities_completed"], before_stats["activities_completed"])
+        self.assertEqual(after_stats["streak"], before_stats["streak"])
+        self.assertEqual(after_leaderboard, before_leaderboard)
+
+        profile = db.get_user(user_id)
+        self.assertEqual(profile["bio"], "Profile bio 2")
+        self.assertEqual(profile["learning_goals"], "Goal 2")
+        self.assertEqual(profile["skills"], "Skill 2")
+
+        page = self.client.get("/profile")
+        self.assertIn(b"Update your bio, goals, and skills", page.data)
+        self.assertIn(b"Save Profile", page.data)
+        self.assertNotIn(b"+15 XP", page.data)
+
     def test_quiz_result_and_dashboard_show_persisted_stats_and_refresh_is_read_only(self):
         self.client.post("/login", data={"username": "learner", "password": "password123"})
         user_id = db.get_user_by_login("learner")["id"]

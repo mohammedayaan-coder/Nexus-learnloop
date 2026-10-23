@@ -47,8 +47,7 @@ def profile():
         if any(len(value) > limit for value, limit in ((bio, 2000), (learning_goals, 250), (skills, 1000))):
             flash("One or more profile fields are too long.", "error")
         elif db.update_profile(user_id, bio, learning_goals, skills):
-            db.record_learning_activity(user_id, "profile_update", 15)
-            flash("Learner profile updated. +15 XP awarded.", "success")
+            flash("Learner profile updated.", "success")
         return redirect(url_for("dashboard.profile"))
 
     return render_template(
